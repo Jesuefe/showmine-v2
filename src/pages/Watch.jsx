@@ -136,9 +136,9 @@ function ShowminePlayer({ url, streamType, title, onBack }) {
     setShowControls(true);
     clearTimeout(controlsTimer.current);
     controlsTimer.current = setTimeout(() => {
-      if (playing) setShowControls(false);
+      setShowControls(false);
     }, 3000);
-  }, [playing]);
+  }, []);
 
   const togglePlay = () => {
     const vid = videoRef.current;
