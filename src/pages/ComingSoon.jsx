@@ -17,7 +17,15 @@ export default function ComingSoon() {
 
   useEffect(() => {
     client.get('/movies.php?action=coming_soon')
-      .then(res => { if (res.data.ok) setMovies(res.data.movies); })
+      .then(res => {
+        if (res.data.ok) {
+          setMovies(res.data.movies);
+          // Pre-fill notified state from API
+          const notifiedMap = {};
+          res.data.movies.forEach(m => { if (m.user_notified) notifiedMap[m.id] = true; });
+          setNotified(notifiedMap);
+        }
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
