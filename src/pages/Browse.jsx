@@ -4,12 +4,12 @@ import client from '../api/client';
 import Navbar from '../components/Navbar';
 
 const SECTIONS = [
-  { label: 'African Movies', sub: 'Nollywood · Yoruba · Igbo · Hausa', color: '#e50914', type: 'movie' },
-  { label: 'International',  sub: 'Hollywood · K-Drama · Bollywood',   color: '#3b82f6', type: 'movie' },
-  { label: 'Sports',         sub: 'Football · Basketball · Athletics',  color: '#22c55e', type: 'movie' },
-  { label: 'Documentaries',  sub: 'Nature · History · True Crime',      color: '#a855f7', type: 'movie' },
-  { label: 'Religious',      sub: 'Christian · Muslim',                 color: '#f59e0b', type: 'movie' },
-  { label: 'Kids Zone',      sub: 'Animation · Education · Quizzes',    color: '#ec4899', type: 'movie' },
+  { label: 'Nollywood',     sub: 'Nigerian · Yoruba · Igbo · Hausa', color: '#e50914', genre: 'nollywood' },
+  { label: 'International', sub: 'Hollywood · K-Drama · Bollywood',  color: '#3b82f6', genre: 'international' },
+  { label: 'Sports',        sub: 'Football · Basketball · Athletics', color: '#22c55e', genre: 'sports' },
+  { label: 'Documentaries', sub: 'Nature · History · True Crime',     color: '#a855f7', genre: 'documentaries' },
+  { label: 'Religious',     sub: 'Christian · Muslim · Faith',        color: '#f59e0b', genre: 'religious' },
+  { label: 'Kids Zone',     sub: 'Animation · Education · Quizzes',   color: '#ec4899', genre: 'kids' },
 ];
 
 function MovieCard({ movie }) {
@@ -56,16 +56,17 @@ export default function Browse() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  const q    = searchParams.get('q') || '';
-  const type = searchParams.get('type') || '';
-  const sort = searchParams.get('sort') || 'popular';
-  const page = parseInt(searchParams.get('page') || '1');
+  const q     = searchParams.get('q') || '';
+  const type  = searchParams.get('type') || '';
+  const genre = searchParams.get('genre') || '';
+  const sort  = searchParams.get('sort') || 'popular';
+  const page  = parseInt(searchParams.get('page') || '1');
 
-  const showSections = !q && !type;
+  const showSections = !q && !type && !genre;
 
   useEffect(() => {
     setLoading(true);
-    client.get(`/movies.php?action=browse&q=${q}&type=${type}&sort=${sort}&page=${page}`)
+    client.get(`/movies.php?action=browse&q=${q}&type=${type}&genre=${genre}&sort=${sort}&page=${page}`)
       .then(res => {
         if (res.data.ok) { setMovies(res.data.movies); setTotal(res.data.total || res.data.movies.length); }
       })
@@ -149,7 +150,7 @@ export default function Browse() {
                 gap: 10, marginBottom: 24
               }}>
                 {SECTIONS.map(s => (
-                  <div key={s.label} onClick={() => setParam('type', s.type)}
+                  <div key={s.label} onClick={() => setParam('genre', s.genre)}
                     style={{
                       borderRadius: 16, padding: '20px 16px',
                       border: '1px solid rgba(255,255,255,.07)',

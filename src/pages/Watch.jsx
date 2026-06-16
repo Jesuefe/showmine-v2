@@ -615,6 +615,7 @@ export default function Watch() {
   const [ad, setAd] = useState(null);
   const [showAd, setShowAd] = useState(false);
   const [error, setError] = useState('');
+  const [inWatchlist, setInWatchlist] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -628,6 +629,10 @@ export default function Watch() {
       })
       .catch(() => setError('Failed to load movie'))
       .finally(() => setLoading(false));
+    // Check watchlist
+    client.get(`/movies.php?action=watchlist_check&movie_id=${slug}`)
+      .then(r => { if (r.data.ok) setInWatchlist(r.data.in_watchlist); })
+      .catch(() => {});
     // Fetch ad
     fetch('/api/v2/ads.php?action=get', { credentials: 'include' })
       .then(r => r.json())
