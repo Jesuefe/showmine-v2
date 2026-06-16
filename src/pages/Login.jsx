@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import client from '../api/client';
 
 function useIsMobile() {
   const [mobile, setMobile] = useState(window.innerWidth < 768);
@@ -12,16 +13,6 @@ function useIsMobile() {
   return mobile;
 }
 
-function QRCode({ url }) {
-  // Simple QR code using Google Charts API
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&bgcolor=111111&color=ffffff&margin=10`;
-  return (
-    <div style={{ textAlign: 'center' }}>
-      <img src={qrUrl} alt="QR Code" style={{ width: 180, height: 180, borderRadius: 12, border: '2px solid rgba(255,255,255,.1)' }} />
-    </div>
-  );
-}
-
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -29,7 +20,13 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showQR, setShowQR] = useState(false);
+
+  // QR state
+  const [qrToken, setQrToken] = useState('');
+  const [qrTimeLeft, setQrTimeLeft] = useState(300);
+  const [qrStatus, setQrStatus] = useState('loading'); // loading, ready, approved, expired
+  const pollRef = useRef(null);
+  const timerRef = useRef(null);
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -48,54 +45,139 @@ export default function Login() {
     }
   };
 
-  const loginUrl = 'https://v2.showmine.ng/login';
+  const generateQR = async () => {
+    setQrStatus('loading');
+    clearInterval(pollRef.current);
+    clearInterval(timerRef.current);
+    try {
+      const res = await client.get('/tv_auth.php?action=generate');
+      if (res.data.ok) {
+        setQrToken(res.data.token);
+        setQrTimeLeft(300);
+        setQrStatus('ready');
+
+        // Poll for approval
+        pollRef.current = setInterval(async () => {
+          try {
+            const r = await client.get(`/tv_auth.php?action=check&token=${res.data.token}`);
+            if (r.data.status === 'approved') {
+              clearInterval(pollRef.current);
+              clearInterval(timerRef.current);
+              setQrStatus('approved');
+              setTimeout(() => navigate('/'), 1500);
+            } else if (r.data.status === 'expired') {
+              clearInterval(pollRef.current);
+              clearInterval(timerRef.current);
+              setQrStatus('expired');
+            }
+          } catch {}
+        }, 2000);
+
+        // Countdown timer
+        timerRef.current = setInterval(() => {
+          setQrTimeLeft(t => {
+            if (t <= 1) {
+              clearInterval(timerRef.current);
+              clearInterval(pollRef.current);
+              setQrStatus('expired');
+              return 0;
+            }
+            return t - 1;
+          });
+        }, 1000);
+      }
+    } catch {}
+  };
+
+  useEffect(() => {
+    // Only generate QR on desktop
+    if (!isMobile) generateQR();
+    return () => {
+      clearInterval(pollRef.current);
+      clearInterval(timerRef.current);
+    };
+  }, [isMobile]);
+
+  const scanUrl = `https://v2.showmine.ng/scan-login?token=${qrToken}`;
+  const qrImgUrl = qrToken ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(scanUrl)}&bgcolor=111111&color=ffffff&margin=8` : '';
+  const mins = Math.floor(qrTimeLeft / 60);
+  const secs = qrTimeLeft % 60;
 
   return (
     <div style={{
       minHeight: '100vh', background: '#000',
       display: 'flex', flexDirection: isMobile ? 'column' : 'row'
     }}>
-      {/* Left side — desktop only background */}
+      {/* Desktop left panel */}
       {!isMobile && (
         <div style={{
-          flex: 1, position: 'relative', overflow: 'hidden',
-          background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0000 50%, #0a0a0a 100%)'
+          flex: 1, background: 'linear-gradient(135deg, #0a0a0a 0%, #1a0000 60%, #0a0a0a 100%)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '3rem', borderRight: '1px solid rgba(255,255,255,.05)'
         }}>
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', padding: '3rem'
-          }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '3.5rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914', marginBottom: 8 }}>SHOWMINE</div>
-            <div style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.3)', letterSpacing: '.2em', marginBottom: '3rem' }}>ENTERTAINMENT</div>
-            <p style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,.5)', textAlign: 'center', maxWidth: 320, lineHeight: 1.7, marginBottom: '3rem' }}>
-              Stream the best of African entertainment — movies, series, live TV and more.
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '3rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914', marginBottom: 6 }}>SHOWMINE</div>
+          <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.25)', letterSpacing: '.2em', marginBottom: '2.5rem' }}>ENTERTAINMENT</div>
+          <p style={{ fontSize: '.95rem', color: 'rgba(255,255,255,.4)', textAlign: 'center', maxWidth: 300, lineHeight: 1.7, marginBottom: '2.5rem' }}>
+            Stream the best of African entertainment — movies, series, live TV and more.
+          </p>
+
+          {/* QR section */}
+          <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 18, padding: '1.5rem 2rem', textAlign: 'center', maxWidth: 280 }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.62rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: '#e50914', marginBottom: 6 }}>
+              Scan to Sign In on Mobile
+            </div>
+            <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.3)', marginBottom: '1rem', lineHeight: 1.5 }}>
+              Open Showmine on your phone and scan
             </p>
 
-            {/* QR Code section — desktop only */}
-            <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, padding: '1.5rem 2rem', textAlign: 'center', maxWidth: 280 }}>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase', color: '#e50914', marginBottom: 8 }}>
-                Scan to Connect on Mobile
+            {qrStatus === 'loading' && (
+              <div style={{ width: 180, height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto' }}>
+                <div style={{ width: 32, height: 32, border: '3px solid #1a1a1a', borderTop: '3px solid #e50914', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
               </div>
-              <p style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.35)', marginBottom: '1rem', lineHeight: 1.5 }}>
-                Scan this QR code with your phone to open Showmine on mobile
-              </p>
-              <QRCode url={loginUrl} />
-              <p style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.2)', marginTop: '1rem' }}>
-                v2.showmine.ng
-              </p>
-            </div>
+            )}
+
+            {qrStatus === 'ready' && qrToken && (
+              <>
+                <img src={qrImgUrl} alt="QR" style={{ width: 180, height: 180, borderRadius: 10, margin: '0 auto', display: 'block' }} />
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.3rem', fontWeight: 900, letterSpacing: '.25em', color: '#fff', marginTop: '1rem' }}>
+                  {qrToken.slice(0,4).toUpperCase()}-{qrToken.slice(4,8).toUpperCase()}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: '.75rem' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'pulse 1.5s ease infinite' }} />
+                  <span style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.25)' }}>
+                    Expires in {mins}:{String(secs).padStart(2,'0')}
+                  </span>
+                </div>
+              </>
+            )}
+
+            {qrStatus === 'approved' && (
+              <div style={{ padding: '1rem 0' }}>
+                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(34,197,94,.15)', border: '2px solid rgba(34,197,94,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto .75rem' }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <p style={{ fontSize: '.82rem', color: '#22c55e', fontWeight: 700 }}>Signed in! Redirecting...</p>
+              </div>
+            )}
+
+            {qrStatus === 'expired' && (
+              <div style={{ padding: '.5rem 0' }}>
+                <p style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.3)', marginBottom: '.75rem' }}>Code expired</p>
+                <button onClick={generateQR} style={{ background: 'rgba(229,9,20,.1)', border: '1px solid rgba(229,9,20,.25)', color: '#e50914', borderRadius: 8, padding: '6px 16px', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer' }}>
+                  Generate New Code
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* Right side — login form */}
+      {/* Right panel — login form */}
       <div style={{
-        width: isMobile ? '100%' : 440,
+        width: isMobile ? '100%' : 420,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: isMobile ? '2rem 1.25rem' : '2rem',
         background: isMobile ? '#000' : '#090909',
-        borderLeft: isMobile ? 'none' : '1px solid rgba(255,255,255,.05)'
       }}>
         <div style={{ width: '100%', maxWidth: 400 }}>
 
@@ -120,7 +202,6 @@ export default function Login() {
                 <input name="email" type="text" value={form.email} onChange={handle} required placeholder="Enter your email"
                   style={{ width: '100%', padding: '.75rem 1rem', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#fff', fontSize: '.9rem', outline: 'none' }} />
               </div>
-
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>Password</label>
                 <input name="password" type="password" value={form.password} onChange={handle} required placeholder="Enter your password"
@@ -129,7 +210,6 @@ export default function Login() {
                   <Link to="/forgot-password" style={{ fontSize: '.75rem', color: '#e50914' }}>Forgot password?</Link>
                 </div>
               </div>
-
               <button type="submit" disabled={loading} style={{
                 width: '100%', padding: '.85rem',
                 background: loading ? '#333' : '#e50914',
@@ -149,30 +229,18 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Mobile QR section */}
+          {/* Mobile — scan to connect to TV */}
           {isMobile && (
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <button onClick={() => navigate('/tv-login')} style={{
-            background: 'none', border: '1px solid rgba(255,255,255,.1)',
-            color: 'rgba(255,255,255,.4)', borderRadius: 8,
-            padding: '.5rem 1rem', fontSize: '.75rem', cursor: 'pointer',
-            marginBottom: '.5rem', width: '100%'
-          }}>
-            Sign in on TV or Tablet with QR
-          </button>
-          <button onClick={() => setShowQR(!showQR)} style={{
-                background: 'none', border: '1px solid rgba(255,255,255,.1)',
-                color: 'rgba(255,255,255,.4)', borderRadius: 8,
-                padding: '.5rem 1rem', fontSize: '.75rem', cursor: 'pointer'
+              <Link to="/scan-login" style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                color: 'rgba(255,255,255,.35)', fontSize: '.78rem',
+                textDecoration: 'none', border: '1px solid rgba(255,255,255,.1)',
+                borderRadius: 8, padding: '.5rem 1rem'
               }}>
-                {showQR ? 'Hide QR Code' : 'Connect to TV / Desktop'}
-              </button>
-              {showQR && (
-                <div style={{ marginTop: '1rem', background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '1.25rem' }}>
-                  <p style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.4)', marginBottom: '1rem' }}>Scan on your TV or desktop browser</p>
-                  <QRCode url={loginUrl} />
-                </div>
-              )}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3a2 2 0 00-2 2v3m5-5v5h-5"/></svg>
+                Sign in on TV with QR Code
+              </Link>
             </div>
           )}
 
@@ -181,6 +249,11 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+      `}</style>
     </div>
   );
 }
