@@ -56,6 +56,7 @@ export default function Profile() {
           { label: 'Coming Soon', path: '/coming-soon' },
           { label: 'Browse Content', path: '/browse' },
           { label: 'Live TV', path: '/live' },
+          { label: 'Sign In on TV / Desktop', path: '/scan-login' },
         ].map((item, i, arr) => (
           <button key={item.label} onClick={() => navigate(item.path)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
