@@ -14,7 +14,7 @@ function useIsMobile() {
 }
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, setUser } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -64,6 +64,10 @@ export default function Login() {
               clearInterval(pollRef.current);
               clearInterval(timerRef.current);
               setQrStatus('approved');
+              // Refresh user from session
+              client.get('/auth.php?action=me').then(me => {
+                if (me.data.ok) setUser(me.data.user);
+              });
               setTimeout(() => navigate('/'), 1500);
             } else if (r.data.status === 'expired') {
               clearInterval(pollRef.current);
