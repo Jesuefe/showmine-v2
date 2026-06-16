@@ -16,6 +16,8 @@ import ComingSoon from './pages/ComingSoon';
 import Onboarding from './pages/Onboarding';
 import NotFound from './pages/NotFound';
 import Terms from './pages/Terms';
+import TVLogin from './pages/TVLogin';
+import ScanLogin from './pages/ScanLogin';
 import SubscribeVerify from './pages/SubscribeVerify';
 import Privacy from './pages/Privacy';
 
@@ -45,7 +47,9 @@ export default function App() {
           <Route path="/watchlist"    element={<PL><Watchlist /></PL>} />
           <Route path="/coming-soon"  element={<PL><ComingSoon /></PL>} />
           <Route path="/subscribe/verify" element={<SubscribeVerify />} />
-           <Route path="/terms"         element={<Terms />} />
+           <Route path="/tv-login"      element={<TVLogin />} />
+           <Route path="/scan-login"    element={<ScanLogin />} />
+           <Route path="/terms"           element={<Terms />} />
            <Route path="/privacy"       element={<Privacy />} />
            <Route path="*"             element={<NotFound />} />
         </Routes>

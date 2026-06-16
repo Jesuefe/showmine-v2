@@ -635,10 +635,6 @@ export default function Watch() {
       })
       .catch(() => setError('Failed to load movie'))
       .finally(() => setLoading(false));
-    // Check watchlist
-    // watchlist check happens after data loads below
-      .then(r => { if (r.data.ok) setInWatchlist(r.data.in_watchlist); })
-      .catch(() => {});
     // Fetch ad
     fetch('/api/v2/ads.php?action=get', { credentials: 'include' })
       .then(r => r.json())

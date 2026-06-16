@@ -152,7 +152,15 @@ export default function Login() {
           {/* Mobile QR section */}
           {isMobile && (
             <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <button onClick={() => setShowQR(!showQR)} style={{
+              <button onClick={() => navigate('/tv-login')} style={{
+            background: 'none', border: '1px solid rgba(255,255,255,.1)',
+            color: 'rgba(255,255,255,.4)', borderRadius: 8,
+            padding: '.5rem 1rem', fontSize: '.75rem', cursor: 'pointer',
+            marginBottom: '.5rem', width: '100%'
+          }}>
+            Sign in on TV or Tablet with QR
+          </button>
+          <button onClick={() => setShowQR(!showQR)} style={{
                 background: 'none', border: '1px solid rgba(255,255,255,.1)',
                 color: 'rgba(255,255,255,.4)', borderRadius: 8,
                 padding: '.5rem 1rem', fontSize: '.75rem', cursor: 'pointer'
