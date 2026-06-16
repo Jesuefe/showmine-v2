@@ -125,7 +125,10 @@ export default function Login() {
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', padding: '3rem', borderRight: '1px solid rgba(255,255,255,.05)'
         }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '3rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914', marginBottom: 6 }}>SHOWMINE</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
+            <img src="/logo.png" alt="Showmine" style={{ width: 56, height: 56, objectFit: 'contain' }} />
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2.5rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</div>
+          </div>
           <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.25)', letterSpacing: '.2em', marginBottom: '2.5rem' }}>ENTERTAINMENT</div>
           <p style={{ fontSize: '.95rem', color: 'rgba(255,255,255,.4)', textAlign: 'center', maxWidth: 300, lineHeight: 1.7, marginBottom: '2.5rem' }}>
             Stream the best of African entertainment — movies, series, live TV and more.
@@ -194,7 +197,10 @@ export default function Login() {
           {/* Mobile logo */}
           {isMobile && (
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 4 }}>
+                <img src="/logo.png" alt="Showmine" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
+              </div>
               <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', letterSpacing: '.15em', marginTop: 4 }}>ENTERTAINMENT</div>
             </div>
           )}

@@ -56,12 +56,11 @@ function Sidebar() {
       overflowY: 'auto', scrollbarWidth: 'none'
     }}>
       {/* Logo */}
-      <div style={{ padding: '22px 20px 20px' }}>
-        <Link to="/" style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontSize: '1.5rem', fontWeight: 900,
-          letterSpacing: '.1em', color: '#e50914', textDecoration: 'none'
-        }}>SHOWMINE</Link>
+      <div style={{ padding: '16px 20px 20px' }}>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/logo.png" alt="Showmine" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.3rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
+        </Link>
       </div>
 
       {/* Main nav */}
@@ -181,11 +180,10 @@ function MobileTopNav() {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 16px', zIndex: 1000
     }}>
-      <Link to="/" style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontSize: '1.3rem', fontWeight: 900,
-        letterSpacing: '.1em', color: '#e50914', textDecoration: 'none'
-      }}>SHOWMINE</Link>
+      <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <img src="/logo.png" alt="Showmine" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.2rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
+      </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={() => navigate('/search')} style={{
           background: 'none', border: 'none',
