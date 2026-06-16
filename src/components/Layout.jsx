@@ -3,17 +3,16 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 function useIsMobile() {
-  // Use touch capability + screen size to detect mobile
-  // This prevents landscape mode from switching to desktop layout
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  const isSmallScreen = Math.min(window.screen.width, window.screen.height) < 768;
-  const [mobile, setMobile] = useState(isTouchDevice && isSmallScreen);
+  // Check if it's a mobile/tablet device using user agent
+  const checkMobile = () => {
+    const ua = navigator.userAgent;
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    const isSmallWidth = window.innerWidth < 1024;
+    return isMobileUA || isSmallWidth;
+  };
+  const [mobile, setMobile] = useState(checkMobile());
   useEffect(() => {
-    const fn = () => {
-      const touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-      const small = Math.min(window.screen.width, window.screen.height) < 768;
-      setMobile(touch && small);
-    };
+    const fn = () => setMobile(checkMobile());
     window.addEventListener('resize', fn);
     return () => window.removeEventListener('resize', fn);
   }, []);
