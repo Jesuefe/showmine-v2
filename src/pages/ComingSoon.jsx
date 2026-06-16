@@ -12,6 +12,7 @@ export default function ComingSoon() {
   const [loading, setLoading] = useState(true);
   const [notified, setNotified] = useState({});
   const [notifying, setNotifying] = useState({});
+  const [notifying, setNotifying] = useState({});
   const [trailer, setTrailer] = useState(null);
 
   useEffect(() => {
