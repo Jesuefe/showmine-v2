@@ -11,6 +11,7 @@ export default function ComingSoon() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notified, setNotified] = useState({});
+  const [notifying, setNotifying] = useState({});
   const [trailer, setTrailer] = useState(null);
 
   useEffect(() => {
@@ -108,7 +109,15 @@ export default function ComingSoon() {
                       Watch Trailer
                     </button>
                   )}
-                  <button onClick={() => setNotified(n => ({ ...n, [m.id]: true }))} style={{
+                  <button onClick={async () => {
+                      if (notified[m.id] || notifying[m.id]) return;
+                      setNotifying(n => ({ ...n, [m.id]: true }));
+                      try {
+                        const res = await client.post('/movies.php?action=notify_me', { upcoming_id: m.id });
+                        if (res.data.ok) setNotified(n => ({ ...n, [m.id]: true }));
+                      } catch {}
+                      setNotifying(n => ({ ...n, [m.id]: false }));
+                    }} style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     background: notified[m.id] ? 'rgba(34,197,94,.1)' : 'rgba(229,9,20,.1)',
                     border: `1px solid ${notified[m.id] ? 'rgba(34,197,94,.25)' : 'rgba(229,9,20,.25)'}`,
@@ -116,7 +125,7 @@ export default function ComingSoon() {
                     borderRadius: 8, padding: '6px 14px',
                     fontSize: '.75rem', fontWeight: 700, cursor: 'pointer'
                   }}>
-                    {notified[m.id] ? 'Notified' : 'Notify Me'}
+                    {notified[m.id] ? 'Notified' : notifying[m.id] ? 'Saving...' : 'Notify Me'}
                   </button>
                   {m.notify_count > 0 && (
                     <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.25)', alignSelf: 'center' }}>
