@@ -122,7 +122,12 @@ export default function Subscribe() {
                   <div key={plan.id} onClick={() => { setSelectedPlan(plan); setSelectedDuration(null); }}
                     style={{ background: isSelected ? 'rgba(229,9,20,.08)' : '#111', border: `1.5px solid ${isSelected ? '#e50914' : 'rgba(255,255,255,.08)'}`, borderRadius: 12, padding: '16px 14px', cursor: 'pointer' }}>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.6rem', fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: isSelected ? '#e50914' : 'rgba(255,255,255,.35)', marginBottom: 4 }}>{plan.name}</div>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.4rem', fontWeight: 900 }}>₦{plan.price_ngn.toLocaleString()}<span style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.4)', fontWeight: 500 }}>/mo</span></div>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.4rem', fontWeight: 900 }}>
+                      {gateway === 'stripe' && plan.price_usd > 0
+                        ? `$${plan.price_usd}`
+                        : `₦${plan.price_ngn.toLocaleString()}`}
+                      <span style={{ fontSize: '.65rem', color: 'rgba(255,255,255,.4)', fontWeight: 500 }}>/mo</span>
+                    </div>
                     <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.35)', marginTop: 4 }}>{plan.max_devices} devices</div>
                   </div>
                 );
