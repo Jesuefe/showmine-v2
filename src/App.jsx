@@ -16,6 +16,7 @@ import ComingSoon from './pages/ComingSoon';
 import Onboarding from './pages/Onboarding';
 import NotFound from './pages/NotFound';
 import Terms from './pages/Terms';
+import SubscribeVerify from './pages/SubscribeVerify';
 import Privacy from './pages/Privacy';
 
 function PL({ children }) {
@@ -43,7 +44,10 @@ export default function App() {
           <Route path="/subscribe"    element={<PL><Subscribe /></PL>} />
           <Route path="/watchlist"    element={<PL><Watchlist /></PL>} />
           <Route path="/coming-soon"  element={<PL><ComingSoon /></PL>} />
-          <Route path="*"             element={<NotFound />} />
+          <Route path="/subscribe/verify" element={<SubscribeVerify />} />
+           <Route path="/terms"         element={<Terms />} />
+           <Route path="/privacy"       element={<Privacy />} />
+           <Route path="*"             element={<NotFound />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
