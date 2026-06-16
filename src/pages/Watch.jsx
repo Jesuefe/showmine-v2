@@ -529,6 +529,81 @@ function ShowminePlayer({ url, streamType, title, onBack }) {
 // ─────────────────────────────────────────────
 // WATCH PAGE
 // ─────────────────────────────────────────────
+
+function AdPlayer({ ad, onFinish, movieId }) {
+  const videoRef = useRef(null);
+  const [timeLeft, setTimeLeft] = useState(ad.max_length || 30);
+  const [canSkip, setCanSkip] = useState(false);
+  const [tracked, setTracked] = useState(false);
+
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid || !ad.video_url) { onFinish(); return; }
+    vid.src = ad.video_url;
+    vid.load();
+    vid.play().catch(() => { vid.muted = true; vid.play().catch(() => onFinish()); });
+    const maxLen = ad.max_length || 30;
+    const skipAt = ad.skip_after || 10;
+
+    const onTime = () => {
+      const remaining = Math.max(0, Math.ceil(maxLen - vid.currentTime));
+      setTimeLeft(remaining);
+      if (vid.currentTime >= skipAt) setCanSkip(true);
+      if (!tracked && vid.currentTime / maxLen >= 0.8) {
+        setTracked(true);
+        trackAd(true);
+      }
+      if (vid.currentTime >= maxLen) finishAd();
+    };
+
+    const finishAd = () => { if (!tracked) trackAd(false); onFinish(); };
+    vid.addEventListener('timeupdate', onTime);
+    vid.addEventListener('ended', finishAd);
+    vid.addEventListener('error', onFinish);
+    return () => {
+      vid.removeEventListener('timeupdate', onTime);
+      vid.removeEventListener('ended', finishAd);
+      vid.removeEventListener('error', onFinish);
+    };
+  }, []);
+
+  const trackAd = (completed) => {
+    const vid = videoRef.current;
+    fetch('/api/v2/ads.php?action=track', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ad_id: ad.id, movie_id: movieId, secs: Math.floor(vid?.currentTime || 0), completed })
+    });
+  };
+
+  const finishAd = () => { trackAd(false); onFinish(); };
+  const maxLen = ad.max_length || 30;
+  const skipAt = ad.skip_after || 10;
+  const elapsed = maxLen - timeLeft;
+
+  return (
+    <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', maxHeight: '82vh', background: '#000' }}>
+      <video ref={videoRef} playsInline
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
+        onContextMenu={e => e.preventDefault()}
+      />
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,.7)', padding: '8px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.5)' }}>Advertisement</span>
+        <span style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>{timeLeft}s</span>
+      </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: 'rgba(255,255,255,.15)', zIndex: 10 }}>
+        <div style={{ height: '100%', background: '#e50914', width: `${(elapsed / maxLen) * 100}%`, transition: 'width .5s linear' }} />
+      </div>
+      {canSkip && ad.skippable ? (
+        <button onClick={finishAd} style={{ position: 'absolute', bottom: 50, right: 16, zIndex: 10, background: 'rgba(0,0,0,.8)', border: '1px solid rgba(255,255,255,.3)', color: '#fff', padding: '8px 16px', borderRadius: 6, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.85rem', fontWeight: 800, letterSpacing: '.04em', cursor: 'pointer' }}>Skip Ad ›</button>
+      ) : ad.skippable ? (
+        <div style={{ position: 'absolute', bottom: 50, right: 16, zIndex: 10, background: 'rgba(0,0,0,.7)', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', padding: '8px 16px', borderRadius: 6, fontSize: '.82rem' }}>Skip in {Math.max(0, skipAt - elapsed)}s</div>
+      ) : null}
+      {ad.click_url && <a href={ad.click_url} target="_blank" rel="noopener noreferrer" style={{ position: 'absolute', inset: '40px 100px 40px 0', zIndex: 5, display: 'block' }} />}
+    </div>
+  );
+}
+
 export default function Watch() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -536,6 +611,7 @@ export default function Watch() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const [episodeUrl, setEpisodeUrl] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -622,8 +698,8 @@ export default function Watch() {
         </div>
       ) : (
         <ShowminePlayer
-          url={play_url}
-          streamType={stream_type}
+          url={episodeUrl || play_url}
+          streamType={episodeUrl ? (episodeUrl.endsWith('.m3u8') ? 'hls' : 'mp4') : stream_type}
           title={movie.title}
           onBack={() => setPlaying(false)}
         />
@@ -665,7 +741,45 @@ export default function Watch() {
         {movie.cast_names && <p style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.4)', marginBottom: '.3rem' }}><strong style={{ color: 'rgba(255,255,255,.7)' }}>Cast:</strong> {movie.cast_names}</p>}
         {movie.director && <p style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.4)', marginBottom: '1.5rem' }}><strong style={{ color: 'rgba(255,255,255,.7)' }}>Director:</strong> {movie.director}</p>}
       </div>
-
+{/* Episodes */}
+{data?.episodes?.length > 0 && (
+  <div style={{ maxWidth: 960, padding: '1rem 20px 0' }}>
+    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '.75rem' }}>
+      Episodes
+    </div>
+    {data.episodes.map(ep => (
+      <div key={ep.id}
+        onClick={() => {
+          const url = ep.stream_720p || ep.stream_480p || ep.stream_360p;
+          if (url) {
+            setEpisodeUrl(url);
+            setPlaying(true);
+          }
+        }}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 12px', borderRadius: 10, marginBottom: 6,
+          cursor: 'pointer',
+          background: 'rgba(255,255,255,.03)',
+          border: '1px solid rgba(255,255,255,.06)'
+        }}>
+        {ep.thumbnail
+          ? <img src={ep.thumbnail} style={{ width: 80, height: 46, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} alt="" />
+          : <div style={{ width: 80, height: 46, background: '#1a1a1a', borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontSize: '.7rem', fontWeight: 700 }}>EP {ep.episode_number}</div>
+        }
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.85)', marginBottom: 3 }}>
+            E{ep.episode_number}: {ep.title}
+          </div>
+          <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)' }}>
+            {ep.duration_mins ? `${ep.duration_mins} min` : ''} {ep.air_date ? `· ${ep.air_date}` : ''}
+          </div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'rgba(255,255,255,.3)', flexShrink: 0 }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+    ))}
+  </div>
+)}
       {/* Related */}
       {related?.length > 0 && (
         <div style={{ marginTop: '1rem', paddingBottom: '2rem' }}>
