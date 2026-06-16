@@ -58,7 +58,7 @@ function Sidebar() {
       {/* Logo */}
       <div style={{ padding: '16px 20px 20px' }}>
         <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/logo.png" alt="Showmine" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          <img src="https://showmine24.b-cdn.net/1024.png" alt="Showmine" style={{ width: 36, height: 36, objectFit: 'contain' }} />
           <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.3rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
         </Link>
       </div>
@@ -181,7 +181,7 @@ function MobileTopNav() {
       padding: '0 16px', zIndex: 1000
     }}>
       <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <img src="/logo.png" alt="Showmine" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+        <img src="https://showmine24.b-cdn.net/1024.png" alt="Showmine" style={{ width: 30, height: 30, objectFit: 'contain' }} />
         <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.2rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

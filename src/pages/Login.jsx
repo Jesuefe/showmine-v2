@@ -126,7 +126,7 @@ export default function Login() {
           justifyContent: 'center', padding: '3rem', borderRight: '1px solid rgba(255,255,255,.05)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
-            <img src="/logo.png" alt="Showmine" style={{ width: 56, height: 56, objectFit: 'contain' }} />
+            <img src="https://showmine24.b-cdn.net/1024.png" alt="Showmine" style={{ width: 56, height: 56, objectFit: 'contain' }} />
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2.5rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</div>
           </div>
           <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.25)', letterSpacing: '.2em', marginBottom: '2.5rem' }}>ENTERTAINMENT</div>
@@ -198,7 +198,7 @@ export default function Login() {
           {isMobile && (
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 4 }}>
-                <img src="/logo.png" alt="Showmine" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                <img src="https://showmine24.b-cdn.net/1024.png" alt="Showmine" style={{ width: 36, height: 36, objectFit: 'contain' }} />
                 <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
               </div>
               <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', letterSpacing: '.15em', marginTop: 4 }}>ENTERTAINMENT</div>
