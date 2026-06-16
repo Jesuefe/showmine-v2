@@ -15,6 +15,8 @@ import Watchlist from './pages/Watchlist';
 import ComingSoon from './pages/ComingSoon';
 import Onboarding from './pages/Onboarding';
 import NotFound from './pages/NotFound';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
 
 function PL({ children }) {
   return (

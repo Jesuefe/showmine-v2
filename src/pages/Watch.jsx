@@ -612,6 +612,8 @@ export default function Watch() {
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [episodeUrl, setEpisodeUrl] = useState(null);
+  const [ad, setAd] = useState(null);
+  const [showAd, setShowAd] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -626,6 +628,11 @@ export default function Watch() {
       })
       .catch(() => setError('Failed to load movie'))
       .finally(() => setLoading(false));
+    // Fetch ad
+    fetch('/api/v2/ads.php?action=get', { credentials: 'include' })
+      .then(r => r.json())
+      .then(d => { if (d.ok && d.ad) setAd(d.ad); })
+      .catch(() => {});
   }, [slug]);
 
   if (loading) return (
@@ -665,7 +672,7 @@ export default function Watch() {
               {movie.genre_names && <span style={{ color: 'rgba(255,255,255,.4)' }}>{movie.genre_names.split(',')[0]}</span>}
             </div>
             {access?.ok ? (
-              <button onClick={() => setPlaying(true)} style={{
+              <button onClick={() => { setPlaying(true); if (ad) setShowAd(true); }} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: '#e50914', color: '#fff', border: 'none', borderRadius: 8,
                 padding: '.82rem 1.8rem', fontFamily: "'Barlow Condensed', sans-serif",
@@ -686,6 +693,12 @@ export default function Watch() {
             )}
           </div>
         </div>
+      ) : showAd && ad ? (
+        <AdPlayer
+          ad={ad}
+          movieId={data?.movie?.id}
+          onFinish={() => { setShowAd(false); setPlaying(true); }}
+        />
       ) : stream_type === 'youtube' && ytId ? (
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', maxHeight: '82vh', background: '#000' }}>
           <iframe key={ytId}
