@@ -75,7 +75,7 @@ export default function Login() {
             {/* QR Code section — desktop only */}
             <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, padding: '1.5rem 2rem', textAlign: 'center', maxWidth: 280 }}>
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase', color: '#e50914', marginBottom: 8 }}>
-                📱 Scan to Connect on Mobile
+                Scan to Connect on Mobile
               </div>
               <p style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.35)', marginBottom: '1rem', lineHeight: 1.5 }}>
                 Scan this QR code with your phone to open Showmine on mobile
@@ -157,7 +157,7 @@ export default function Login() {
                 color: 'rgba(255,255,255,.4)', borderRadius: 8,
                 padding: '.5rem 1rem', fontSize: '.75rem', cursor: 'pointer'
               }}>
-                {showQR ? 'Hide QR Code' : '📺 Connect to TV / Desktop'}
+                {showQR ? 'Hide QR Code' : 'Connect to TV / Desktop'}
               </button>
               {showQR && (
                 <div style={{ marginTop: '1rem', background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 12, padding: '1.25rem' }}>
