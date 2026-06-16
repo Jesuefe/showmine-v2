@@ -198,8 +198,10 @@ export default function Browse() {
             </div>
           ) : movies.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'rgba(255,255,255,.3)' }}>
-              <p style={{ fontSize: '.9rem' }}>{q ? `No results for "${q}"` : 'No content available'}</p>
-              {(q || type) && (
+              <p style={{ fontSize: '.9rem' }}>
+                {q ? `No results for "${q}"` : genre ? `No ${genre} content available yet — check back soon` : 'No content available'}
+              </p>
+              {(q || type || genre) && (
                 <button onClick={() => setSearchParams({})} style={{
                   marginTop: '.75rem', background: 'rgba(255,255,255,.07)',
                   color: 'rgba(255,255,255,.6)', border: '1px solid rgba(255,255,255,.1)',

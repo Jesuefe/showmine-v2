@@ -624,13 +624,19 @@ export default function Watch() {
     setError('');
     client.get(`/movies.php?action=watch&slug=${slug}`)
       .then(res => {
-        if (res.data.ok) setData(res.data);
+        if (res.data.ok) {
+          setData(res.data);
+          // Check watchlist using movie id
+          client.get(`/movies.php?action=watchlist_check&movie_id=${res.data.movie?.id}`)
+            .then(r => { if (r.data.ok) setInWatchlist(r.data.in_watchlist); })
+            .catch(() => {});
+        }
         else setError(res.data.error || 'Movie not found');
       })
       .catch(() => setError('Failed to load movie'))
       .finally(() => setLoading(false));
     // Check watchlist
-    client.get(`/movies.php?action=watchlist_check&movie_id=${slug}`)
+    // watchlist check happens after data loads below
       .then(r => { if (r.data.ok) setInWatchlist(r.data.in_watchlist); })
       .catch(() => {});
     // Fetch ad
@@ -743,8 +749,20 @@ export default function Watch() {
               color: '#ff6b6b', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
             }}>▶ Watch Now</button>
           )}
+          <button onClick={async () => {
+            const action = inWatchlist ? 'watchlist_remove' : 'watchlist_add';
+            await client.post(`/movies.php?action=${action}`, { movie_id: movie.id });
+            setInWatchlist(w => !w);
+          }} style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '.42rem .9rem',
+            background: inWatchlist ? 'rgba(34,197,94,.1)' : 'rgba(255,255,255,.06)',
+            border: `1px solid ${inWatchlist ? 'rgba(34,197,94,.25)' : 'rgba(255,255,255,.1)'}`,
+            borderRadius: 8, color: inWatchlist ? '#22c55e' : 'rgba(255,255,255,.8)',
+            fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
+          }}>{inWatchlist ? '✓ In My List' : '+ My List'}</button>
           <button onClick={() => {
-            const url = `https://app.showmine.ng/watch/${movie.slug}`;
+            const url = `https://v2.showmine.ng/watch/${movie.slug}`;
             if (navigator.share) navigator.share({ title: movie.title, url });
             else { navigator.clipboard?.writeText(url); alert('Link copied!'); }
           }} style={{
