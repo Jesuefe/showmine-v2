@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Hls from 'hls.js';
 import client from '../api/client';
-import Navbar from '../components/Navbar';
 
 const CATEGORIES = [
   { id: 'all',           label: 'All' },
@@ -80,8 +79,7 @@ export default function Live() {
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', paddingBottom: '5rem' }}>
-      <Navbar />
-      <div style={{ paddingTop: 60 }}>
+            <div style={{ paddingTop: 60 }}>
         <div style={{ display: 'flex', gap: 0, maxWidth: 1400, margin: '0 auto' }}>
 
           {/* ── MAIN CONTENT ── */}

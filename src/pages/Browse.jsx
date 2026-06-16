@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
-import Navbar from '../components/Navbar';
 
 const SECTIONS = [
   { label: 'Nollywood',     sub: 'Nigerian · Yoruba · Igbo · Hausa', color: '#e50914', genre: 'nollywood' },
@@ -83,8 +82,7 @@ export default function Browse() {
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', paddingBottom: '5rem' }}>
-      <Navbar />
-      <div style={{ paddingTop: 60 }}>
+            <div style={{ paddingTop: 60 }}>
         <div style={{ padding: '16px 16px 0', maxWidth: 1400, margin: '0 auto' }}>
 
           <h1 style={{
