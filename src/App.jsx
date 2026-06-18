@@ -17,6 +17,7 @@ import Onboarding from './pages/Onboarding';
 import NotFound from './pages/NotFound';
 import Terms from './pages/Terms';
 import Kids from './pages/Kids';
+import DataUsage from './pages/DataUsage';
 import KidsSetup from './pages/KidsSetup';
 import TVLogin from './pages/TVLogin';
 import ScanLogin from './pages/ScanLogin';
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/subscribe/verify" element={<SubscribeVerify />} />
            <Route path="/tv-login"      element={<TVLogin />} />
            <Route path="/scan-login"    element={<ScanLogin />} />
+           <Route path="/data-usage"   element={<PL><DataUsage /></PL>} />
            <Route path="/kids"          element={<PL><Kids /></PL>} />
            <Route path="/kids-setup"    element={<PL><KidsSetup /></PL>} />
            <Route path="/terms"             element={<Terms />} />
