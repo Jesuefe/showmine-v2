@@ -19,6 +19,11 @@ export function AuthProvider({ children }) {
     if (res.data.ok) setUser(res.data.user);
     return res.data;
   };
+  const loginForce = async (email, password) => {
+    const res = await client.post('/auth.php?action=login_force', { email, password });
+    if (res.data.ok) setUser(res.data.user);
+    return res.data;
+  };
 
   const logout = async () => {
     await client.post('/auth.php?action=logout');
@@ -27,7 +32,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, loginForce, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

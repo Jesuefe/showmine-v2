@@ -20,12 +20,14 @@ function useIsMobile() {
 }
 
 export default function Login() {
-  const { login, setUser } = useAuth();
+  const { login, loginForce, setUser } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deviceLimitInfo, setDeviceLimitInfo] = useState(null);
+  const [forceLoading, setForceLoading] = useState(false);
 
   // QR state
   const [qrToken, setQrToken] = useState('');
@@ -42,12 +44,36 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await login(form.email, form.password);
-      if (res.ok) navigate('/');
-      else setError(res.error || 'Login failed');
+      if (res.ok) {
+        navigate('/');
+      } else if (res.device_limit_reached) {
+        setDeviceLimitInfo({ max_devices: res.max_devices, message: res.error });
+      } else {
+        setError(res.error || 'Login failed');
+      }
     } catch {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForceLogin = async () => {
+    setForceLoading(true);
+    try {
+      const res = await loginForce(form.email, form.password);
+      if (res.ok) {
+        setDeviceLimitInfo(null);
+        navigate('/');
+      } else {
+        setError(res.error || 'Login failed');
+        setDeviceLimitInfo(null);
+      }
+    } catch {
+      setError('Network error. Please try again.');
+      setDeviceLimitInfo(null);
+    } finally {
+      setForceLoading(false);
     }
   };
 
@@ -265,6 +291,41 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      {/* Device limit modal */}
+      {deviceLimitInfo && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 2000,
+          background: 'rgba(0,0,0,.85)', backdropFilter: 'blur(6px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+        }}>
+          <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.1)', borderRadius: 18, padding: '2rem', width: '100%', maxWidth: 380, textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(229,9,20,.1)', border: '1px solid rgba(229,9,20,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.2rem' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#e50914" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>
+            </div>
+            <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.3rem', fontWeight: 800, marginBottom: '.5rem' }}>Device Limit Reached</h2>
+            <p style={{ fontSize: '.82rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+              Your plan allows {deviceLimitInfo.max_devices} device{deviceLimitInfo.max_devices > 1 ? 's' : ''} signed in at a time. Sign out of another device to continue, or log out everywhere and sign in here.
+            </p>
+            <button onClick={handleForceLogin} disabled={forceLoading} style={{
+              width: '100%', padding: '12px', marginBottom: 10,
+              background: forceLoading ? '#333' : '#e50914', border: 'none',
+              borderRadius: 10, color: '#fff', fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '.9rem', fontWeight: 800, letterSpacing: '.04em',
+              textTransform: 'uppercase', cursor: forceLoading ? 'not-allowed' : 'pointer'
+            }}>
+              {forceLoading ? 'Signing in...' : 'Log Out Other Devices & Continue'}
+            </button>
+            <button onClick={() => setDeviceLimitInfo(null)} style={{
+              width: '100%', padding: '12px', background: 'rgba(255,255,255,.05)',
+              border: '1px solid rgba(255,255,255,.1)', borderRadius: 10,
+              color: 'rgba(255,255,255,.5)', fontSize: '.85rem', cursor: 'pointer'
+            }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
