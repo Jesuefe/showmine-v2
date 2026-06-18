@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslatedTitles } from '../i18n/useTranslatedContent';
+import { useTranslatedTitles, useTranslatedMovie } from '../i18n/useTranslatedContent';
 import client from '../api/client';
 
 function useIsMobile() {
@@ -102,6 +102,7 @@ function MovieRow({ title, label, movies, seeAllPath }) {
 function HeroSlider({ movies, isMobile }) {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
+  const translatedHero = useTranslatedMovie(movies[current]?.id);
   const [muted, setMuted] = useState(true);
   const [showTrailer, setShowTrailer] = useState(false);
   const timerRef = useRef(null);
@@ -267,13 +268,13 @@ function HeroSlider({ movies, isMobile }) {
           fontSize: isMobile ? 'clamp(2.2rem,8vw,3.5rem)' : 'clamp(2.8rem,4vw,4.5rem)',
           fontWeight: 900, lineHeight: .9, marginBottom: 12,
           textShadow: '0 2px 24px rgba(0,0,0,.9)'
-        }}>{movie.title}</h1>
+        }}>{translatedHero?.title || movie.title}</h1>
 
         {!isMobile && movie.short_desc && (
           <p style={{
             fontSize: '.87rem', color: 'rgba(255,255,255,.6)',
             lineHeight: 1.65, marginBottom: 16, maxWidth: 460
-          }}>{movie.short_desc.substring(0, 130)}{movie.short_desc.length > 130 ? '...' : ''}</p>
+          }}>{(() => { const d = translatedHero?.short_desc || movie.short_desc; return d.substring(0, 130) + (d.length > 130 ? '...' : ''); })()}</p>
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>

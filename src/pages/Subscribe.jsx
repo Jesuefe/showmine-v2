@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
+import { useI18n } from '../i18n/I18nContext';
 
 export default function Subscribe() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [plans, setPlans] = useState([]);
@@ -69,8 +71,8 @@ export default function Subscribe() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase', color: '#e50914', marginBottom: 6 }}>Subscription</div>
-          <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, marginBottom: '.5rem' }}>Choose Your Plan</h1>
-          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.88rem' }}>Unlock unlimited African entertainment</p>
+          <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, marginBottom: '.5rem' }}>{t('choose_plan')}</h1>
+          <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.88rem' }}>{t('unlock_unlimited')}</p>
         </div>
 
         {/* Plan cards */}
@@ -89,7 +91,7 @@ export default function Subscribe() {
                 cursor: 'pointer', transition: 'all .15s', position: 'relative'
               }}>
                 {plan.slug === 'standard' && (
-                  <div style={{ position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#e50914', color: '#fff', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.6rem', fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', padding: '2px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>Most Popular</div>
+                  <div style={{ position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)', background: '#e50914', color: '#fff', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.6rem', fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', padding: '2px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>{t('most_popular')}</div>
                 )}
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.62rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: isSelected ? '#e50914' : 'rgba(255,255,255,.4)', marginBottom: 6 }}>{plan.name}</div>
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.8rem', fontWeight: 900, marginBottom: 8 }}>
@@ -114,7 +116,7 @@ export default function Subscribe() {
         {/* Enterprise plans */}
         {plans.filter(p => p.is_enterprise).length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 10 }}>Enterprise Plans</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 10 }}>{t('enterprise_plans')}</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 10 }}>
               {plans.filter(p => p.is_enterprise).map(plan => {
                 const isSelected = selectedPlan?.id === plan.id;
@@ -139,7 +141,7 @@ export default function Subscribe() {
         {/* Duration selector */}
         {selectedPlan && selectedPlan.durations?.length > 0 && (
           <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14, padding: '20px', marginBottom: '1.5rem' }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>Billing Period</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>{t('billing_period')}</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {selectedPlan.durations.map(dur => {
                 const isSelected = selectedDuration?.id === dur.id;
@@ -167,7 +169,7 @@ export default function Subscribe() {
         {/* Payment method */}
         {selectedPlan && selectedPlan.price_ngn > 0 && (
           <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 14, padding: '20px', marginBottom: '1.5rem' }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>Payment Method</div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>{t('payment_method')}</div>
             <div style={{ display: 'flex', gap: 10 }}>
               {[
                 { id: 'paystack', label: 'Paystack', sub: 'NGN · Cards, Bank Transfer, USSD' },
@@ -224,7 +226,7 @@ export default function Subscribe() {
                 letterSpacing: '.04em', textTransform: 'uppercase',
                 cursor: processing ? 'not-allowed' : 'pointer'
               }}>
-                {processing ? 'Processing...' : `Pay with ${gateway === 'paystack' ? 'Paystack' : 'Stripe'}`}
+                {processing ? t('processing') : `${t('pay_with')} ${gateway === 'paystack' ? 'Paystack' : 'Stripe'}`}
               </button>
             )}
           </div>

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useI18n } from '../i18n/I18nContext';
 
 export default function Profile() {
+  const { t } = useI18n();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [msg, setMsg] = useState('');
@@ -12,7 +14,7 @@ export default function Profile() {
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', padding: '24px 20px 40px', maxWidth: 600, margin: '0 auto' }}>
-      <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>My Account</h1>
+      <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>{t('my_account')}</h1>
 
       {/* Avatar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: '1.5rem', padding: '20px', background: '#111', borderRadius: 14, border: '1px solid rgba(255,255,255,.07)' }}>
@@ -30,13 +32,13 @@ export default function Profile() {
 
       {/* Subscription */}
       <div style={{ background: '#111', borderRadius: 14, border: '1px solid rgba(255,255,255,.07)', padding: '20px', marginBottom: '1rem' }}>
-        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.62rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>Subscription</div>
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.62rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.3)', marginBottom: 12 }}>{t('subscription')}</div>
         {user?.sub ? (
           <div>
             <div style={{ fontSize: '.9rem', fontWeight: 700, marginBottom: 4 }}>{user.sub.plan} Plan</div>
-            {user.sub.expires_at && <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.4)', marginBottom: 12 }}>Expires: {new Date(user.sub.expires_at).toLocaleDateString()}</div>}
+            {user.sub.expires_at && <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.4)', marginBottom: 12 }}>{t('expires')}: {new Date(user.sub.expires_at).toLocaleDateString()}</div>}
             <button onClick={() => navigate('/subscribe')} style={{ background: 'rgba(229,9,20,.1)', border: '1px solid rgba(229,9,20,.25)', color: '#e50914', borderRadius: 8, padding: '.5rem 1rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer' }}>
-              Manage Subscription
+              {t('manage_subscription')}
             </button>
           </div>
         ) : (
@@ -52,14 +54,14 @@ export default function Profile() {
       {/* Menu items */}
       <div style={{ background: '#111', borderRadius: 14, border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', marginBottom: '1rem' }}>
         {[
-          { label: 'My Watchlist', path: '/watchlist' },
-          { label: 'Coming Soon', path: '/coming-soon' },
-          { label: 'Browse Content', path: '/browse' },
-          { label: 'Live TV', path: '/live' },
-          { label: 'Sign In on TV / Desktop', path: '/scan-login' },
-          { label: 'Kids Mode', path: '/kids-setup' },
-          { label: 'Data Usage', path: '/data-usage' },
-          { label: 'Active Devices', path: '/sessions' },
+          { label: t('my_watchlist'), path: '/watchlist' },
+          { label: t('coming_soon'), path: '/coming-soon' },
+          { label: t('browse_content'), path: '/browse' },
+          { label: t('live_tv'), path: '/live' },
+          { label: t('sign_in_tv_desktop'), path: '/scan-login' },
+          { label: t('kids_mode'), path: '/kids-setup' },
+          { label: t('data_usage'), path: '/data-usage' },
+          { label: t('active_devices'), path: '/sessions' },
         ].map((item, i, arr) => (
           <button key={item.label} onClick={() => navigate(item.path)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -76,8 +78,8 @@ export default function Profile() {
       {/* Legal */}
       <div style={{ background: '#111', borderRadius: 14, border: '1px solid rgba(255,255,255,.07)', overflow: 'hidden', marginBottom: '1.5rem' }}>
         {[
-          { label: 'Terms of Service', path: '/terms' },
-          { label: 'Privacy Policy', path: '/privacy' },
+          { label: t('terms_of_service'), path: '/terms' },
+          { label: t('privacy_policy'), path: '/privacy' },
         ].map((item, i, arr) => (
           <button key={item.label} onClick={() => navigate(item.path)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -93,7 +95,7 @@ export default function Profile() {
 
       {/* Sign out */}
       <button onClick={logout} style={{ width: '100%', padding: '14px', background: 'rgba(229,9,20,.08)', border: '1px solid rgba(229,9,20,.2)', borderRadius: 12, color: '#e50914', fontSize: '.9rem', fontWeight: 800, cursor: 'pointer', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '.06em', textTransform: 'uppercase' }}>
-        Sign Out
+        {t('sign_out')}
       </button>
 
       {msg && <p style={{ color: '#22c55e', fontSize: '.8rem', marginTop: '1rem', textAlign: 'center' }}>{msg}</p>}
