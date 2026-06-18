@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import LanguageSelector from './LanguageSelector';
 
 function useIsMobile() {
   // Check if it's a mobile/tablet device using user agent
@@ -133,6 +134,9 @@ function Sidebar() {
           </div>
         </div>
 
+        <div style={{ padding: '6px 10px 10px' }}>
+          <LanguageSelector compact />
+        </div>
         <Link to="/profile" style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '8px 10px', borderRadius: 8, marginBottom: 1,

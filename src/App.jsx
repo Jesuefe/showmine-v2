@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { I18nProvider } from './i18n/I18nContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -36,6 +37,7 @@ function PL({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <I18nProvider>
       <AuthProvider>
         <Routes>
           <Route path="/login"        element={<Login />} />
@@ -62,6 +64,7 @@ export default function App() {
            <Route path="*"             element={<NotFound />} />
         </Routes>
       </AuthProvider>
+      </I18nProvider>
     </BrowserRouter>
   );
 }
