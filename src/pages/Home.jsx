@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslatedTitles } from '../i18n/useTranslatedContent';
 import client from '../api/client';
 
 function useIsMobile() {
@@ -17,7 +18,7 @@ function useIsMobile() {
   return mobile;
 }
 
-function MovieCard({ movie }) {
+function MovieCard({ movie, displayTitle }) {
   const navigate = useNavigate();
   return (
     <div onClick={() => navigate(`/watch/${movie.slug}`)}
@@ -28,7 +29,7 @@ function MovieCard({ movie }) {
         boxShadow: '0 4px 16px rgba(0,0,0,.5)'
       }}>
         {movie.cover_image
-          ? <img src={movie.cover_image} alt={movie.title}
+          ? <img src={movie.cover_image} alt={displayTitle || movie.title}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           : <div style={{ width: '100%', height: '100%', background: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.12)" strokeWidth="1.5"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/></svg>
@@ -46,7 +47,7 @@ function MovieCard({ movie }) {
         <div style={{
           fontSize: '.72rem', fontWeight: 700, color: 'rgba(255,255,255,.8)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-        }}>{movie.title}</div>
+        }}>{displayTitle || movie.title}</div>
         <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.22)', marginTop: 2 }}>
           {movie.release_year}
         </div>
@@ -57,6 +58,7 @@ function MovieCard({ movie }) {
 
 function MovieRow({ title, label, movies, seeAllPath }) {
   const navigate = useNavigate();
+  const { getTitle } = useTranslatedTitles(movies);
   if (!movies?.length) return null;
   return (
     <div style={{ marginBottom: '2.2rem' }}>
@@ -91,7 +93,7 @@ function MovieRow({ title, label, movies, seeAllPath }) {
         padding: '2px 20px 8px', scrollbarWidth: 'none',
         WebkitOverflowScrolling: 'touch'
       }}>
-        {movies.map(m => <MovieCard key={m.id} movie={m} />)}
+        {movies.map(m => <MovieCard key={m.id} movie={m} displayTitle={getTitle(m)} />)}
       </div>
     </div>
   );
