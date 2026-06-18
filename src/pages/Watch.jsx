@@ -47,7 +47,7 @@ function MovieCard({ movie }) {
 // ─────────────────────────────────────────────
 // SHOWMINE PLAYER
 // ─────────────────────────────────────────────
-function ShowminePlayer({ url, streamType, title, onBack }) {
+function ShowminePlayer({ url, streamType, title, onBack, movieId }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const containerRef = useRef(null);
@@ -85,7 +85,28 @@ function ShowminePlayer({ url, streamType, title, onBack }) {
         hls.loadSource(url);
         hls.attachMedia(vid);
         hls.on(Hls.Events.MANIFEST_PARSED, (e, data) => {
-          setLevels(data.levels.map((l, i) => ({ id: i, label: l.height + 'p' })));
+          const levelList = data.levels.map((l, i) => ({ id: i, label: l.height + 'p' }));
+          setLevels(levelList);
+          const savedPref = window.__showmineQualityPref || { quality_preference: 'auto', data_saver: false };
+          const qualityMap = { '360p': 360, '480p': 480, '720p': 720, '1080p': 1080, '4k': 2160 };
+          let targetHeight = null;
+          if (savedPref.data_saver) {
+            targetHeight = 360;
+          } else if (savedPref.quality_preference && savedPref.quality_preference !== 'auto') {
+            targetHeight = qualityMap[savedPref.quality_preference];
+          }
+          if (targetHeight) {
+            let bestIdx = -1, bestDiff = Infinity;
+            data.levels.forEach((l, i) => {
+              const diff = Math.abs(l.height - targetHeight);
+              if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+            });
+            if (bestIdx >= 0) {
+              hls.currentLevel = bestIdx;
+              setQuality(data.levels[bestIdx].height + 'p');
+              window.__showmineCurrentQuality = data.levels[bestIdx].height + 'p';
+            }
+          }
           vid.play().catch(() => {});
         });
         hls.on(Hls.Events.ERROR, (e, d) => {
@@ -104,6 +125,59 @@ function ShowminePlayer({ url, streamType, title, onBack }) {
 
     return () => { if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null; } };
   }, [url, streamType]);
+
+  // Fetch user data saver / quality preference once
+  useEffect(() => {
+    client.get('/data_usage.php?action=summary')
+      .then(res => {
+        if (res.data.ok) {
+          window.__showmineQualityPref = {
+            data_saver: res.data.data_saver,
+            quality_preference: res.data.quality_preference,
+          };
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Track approximate data usage during playback
+  useEffect(() => {
+    if (!movieId) return;
+    const KB_PER_SEC = { '360p': 0.12, '480p': 0.2, '720p': 0.37, '1080p': 0.75, '4k': 1.5 };
+    const interval = setInterval(() => {
+      const vid = videoRef.current;
+      if (!vid || vid.paused) return;
+      const q = window.__showmineQualityPref?.data_saver ? '360p' : (window.__showmineCurrentQuality || '480p');
+      const rate = KB_PER_SEC[q] || 0.2; // MB per second estimate
+      const addedBytes = rate * 1024 * 1024 * 5; // 5 second interval
+      dataTrackRef.current.bytesEstimate += addedBytes;
+      setSessionDataUsed(dataTrackRef.current.bytesEstimate);
+
+      // Send to server every ~30 seconds of accumulated tracking
+      if (dataTrackRef.current.bytesEstimate - dataTrackRef.current.lastSentBytes > 1024 * 1024) {
+        const toSend = Math.round(dataTrackRef.current.bytesEstimate);
+        client.post('/data_usage.php?action=track', {
+          movie_id: movieId,
+          bytes: toSend,
+          quality: q,
+          completed: 0,
+        }).catch(() => {});
+        dataTrackRef.current.lastSentBytes = dataTrackRef.current.bytesEstimate;
+      }
+    }, 5000);
+    return () => {
+      clearInterval(interval);
+      // Final flush on unmount
+      if (dataTrackRef.current.bytesEstimate > 0) {
+        client.post('/data_usage.php?action=track', {
+          movie_id: movieId,
+          bytes: Math.round(dataTrackRef.current.bytesEstimate),
+          quality: window.__showmineCurrentQuality || '480p',
+          completed: 0,
+        }).catch(() => {});
+      }
+    };
+  }, [movieId]);
 
   // Video events
   useEffect(() => {
@@ -479,6 +553,18 @@ function ShowminePlayer({ url, streamType, title, onBack }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {/* Data usage badge */}
+              {sessionDataUsed > 0 && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)',
+                  borderRadius: 6, padding: '3px 8px', fontSize: '.65rem',
+                  color: 'rgba(255,255,255,.6)', fontWeight: 600
+                }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                  {(sessionDataUsed / (1024*1024)).toFixed(1)} MB
+                </div>
+              )}
               {/* Quality */}
               {levels.length > 0 && (
                 <div style={{ position: 'relative' }}>
@@ -496,12 +582,12 @@ function ShowminePlayer({ url, streamType, title, onBack }) {
                     }}>
                       <button onClick={() => {
                         if (hlsRef.current) { hlsRef.current.currentLevel = -1; }
-                        setQuality('Auto'); setShowQuality(false);
+                        setQuality('Auto'); setShowQuality(false); window.__showmineCurrentQuality = 'auto';
                       }} style={{ display: 'block', width: '100%', padding: '8px 12px', background: quality === 'Auto' ? 'rgba(229,9,20,.15)' : 'none', border: 'none', color: quality === 'Auto' ? '#e50914' : '#fff', cursor: 'pointer', fontSize: '.78rem', textAlign: 'left' }}>Auto</button>
                       {levels.map(l => (
                         <button key={l.id} onClick={() => {
                           if (hlsRef.current) hlsRef.current.currentLevel = l.id;
-                          setQuality(l.label); setShowQuality(false);
+                          setQuality(l.label); setShowQuality(false); window.__showmineCurrentQuality = l.label;
                         }} style={{ display: 'block', width: '100%', padding: '8px 12px', background: quality === l.label ? 'rgba(229,9,20,.15)' : 'none', border: 'none', color: quality === l.label ? '#e50914' : '#fff', cursor: 'pointer', fontSize: '.78rem', textAlign: 'left' }}>{l.label}</button>
                       ))}
                     </div>
@@ -722,6 +808,7 @@ export default function Watch() {
           streamType={episodeUrl ? (episodeUrl.endsWith('.m3u8') ? 'hls' : 'mp4') : stream_type}
           title={movie.title}
           onBack={() => setPlaying(false)}
+          movieId={movie.id}
         />
       )}
 
