@@ -59,6 +59,7 @@ export default function Profile() {
           { label: 'Sign In on TV / Desktop', path: '/scan-login' },
           { label: 'Kids Mode', path: '/kids-setup' },
           { label: 'Data Usage', path: '/data-usage' },
+          { label: 'Active Devices', path: '/sessions' },
         ].map((item, i, arr) => (
           <button key={item.label} onClick={() => navigate(item.path)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',

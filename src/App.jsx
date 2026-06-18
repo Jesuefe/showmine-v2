@@ -18,6 +18,7 @@ import NotFound from './pages/NotFound';
 import Terms from './pages/Terms';
 import Kids from './pages/Kids';
 import DataUsage from './pages/DataUsage';
+import Sessions from './pages/Sessions';
 import KidsSetup from './pages/KidsSetup';
 import TVLogin from './pages/TVLogin';
 import ScanLogin from './pages/ScanLogin';
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/subscribe/verify" element={<SubscribeVerify />} />
            <Route path="/tv-login"      element={<TVLogin />} />
            <Route path="/scan-login"    element={<ScanLogin />} />
+           <Route path="/sessions"     element={<PL><Sessions /></PL>} />
            <Route path="/data-usage"   element={<PL><DataUsage /></PL>} />
            <Route path="/kids"          element={<PL><Kids /></PL>} />
            <Route path="/kids-setup"    element={<PL><KidsSetup /></PL>} />
