@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
+import { useI18n } from '../i18n/I18nContext';
+import LanguageSelector from '../components/LanguageSelector';
 
 function useIsMobile() {
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -20,6 +22,7 @@ function useIsMobile() {
 }
 
 export default function Login() {
+  const { t } = useI18n();
   const { login, loginForce, setUser } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -142,8 +145,14 @@ export default function Login() {
   return (
     <div style={{
       minHeight: '100vh', background: '#000',
-      display: 'flex', flexDirection: isMobile ? 'column' : 'row'
+      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+      position: 'relative'
     }}>
+      {/* Language selector */}
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 10 }}>
+        <LanguageSelector compact />
+      </div>
+
       {/* Desktop left panel */}
       {!isMobile && (
         <div style={{
@@ -157,16 +166,16 @@ export default function Login() {
           </div>
           <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.25)', letterSpacing: '.2em', marginBottom: '2.5rem' }}>ENTERTAINMENT</div>
           <p style={{ fontSize: '.95rem', color: 'rgba(255,255,255,.4)', textAlign: 'center', maxWidth: 300, lineHeight: 1.7, marginBottom: '2.5rem' }}>
-            Stream the best of African entertainment — movies, series, live TV and more.
+            {t('tagline')}
           </p>
 
           {/* QR section */}
           <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 18, padding: '1.5rem 2rem', textAlign: 'center', maxWidth: 280 }}>
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.62rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: '#e50914', marginBottom: 6 }}>
-              Scan to Sign In on Mobile
+              {t('scan_sign_in_mobile')}
             </div>
             <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.3)', marginBottom: '1rem', lineHeight: 1.5 }}>
-              Open Showmine on your phone and scan
+              {t('open_showmine_scan')}
             </p>
 
             {qrStatus === 'loading' && (
@@ -232,7 +241,7 @@ export default function Login() {
           )}
 
           <div style={{ background: '#111', border: '1px solid rgba(255,255,255,.08)', borderRadius: 16, padding: '2rem' }}>
-            <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>Sign In</h1>
+            <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 800, marginBottom: '1.5rem' }}>{t('sign_in')}</h1>
 
             {error && (
               <div style={{ background: 'rgba(229,9,20,.1)', border: '1px solid rgba(229,9,20,.3)', borderRadius: 8, padding: '.75rem 1rem', color: '#ff6b6b', fontSize: '.84rem', marginBottom: '1rem' }}>{error}</div>
@@ -240,16 +249,16 @@ export default function Login() {
 
             <form onSubmit={submit}>
               <div style={{ marginBottom: '1rem' }}>
-                <label style={{ display: 'block', fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>Email or Username</label>
+                <label style={{ display: 'block', fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>{t('email_username')}</label>
                 <input name="email" type="text" value={form.email} onChange={handle} required placeholder="Enter your email"
                   style={{ width: '100%', padding: '.75rem 1rem', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#fff', fontSize: '.9rem', outline: 'none' }} />
               </div>
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>Password</label>
+                <label style={{ display: 'block', fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>{t('password')}</label>
                 <input name="password" type="password" value={form.password} onChange={handle} required placeholder="Enter your password"
                   style={{ width: '100%', padding: '.75rem 1rem', background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 8, color: '#fff', fontSize: '.9rem', outline: 'none' }} />
                 <div style={{ textAlign: 'right', marginTop: 6 }}>
-                  <Link to="/forgot-password" style={{ fontSize: '.75rem', color: '#e50914' }}>Forgot password?</Link>
+                  <Link to="/forgot-password" style={{ fontSize: '.75rem', color: '#e50914' }}>{t('forgot_password')}</Link>
                 </div>
               </div>
               <button type="submit" disabled={loading} style={{
@@ -261,12 +270,12 @@ export default function Login() {
                 letterSpacing: '.06em', textTransform: 'uppercase',
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}>
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? t('signing_in') : t('sign_in')}
               </button>
             </form>
 
             <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '.84rem', color: 'rgba(255,255,255,.4)' }}>
-              Don't have an account?{' '}
+              {t('dont_have_account')}{' '}
               <Link to="/register" style={{ color: '#e50914', fontWeight: 700 }}>Sign Up</Link>
             </p>
           </div>
