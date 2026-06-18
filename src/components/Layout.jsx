@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from './LanguageSelector';
+import { useI18n } from '../i18n/I18nContext';
 
 function useIsMobile() {
   // Check if it's a mobile/tablet device using user agent
@@ -21,30 +22,31 @@ function useIsMobile() {
 }
 
 const MAIN_NAV = [
-  { path: '/', label: 'Home', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-  { path: '/browse', label: 'Browse', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-  { path: '/live', label: 'Live TV', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48 0a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/></svg> },
-  { path: '/watchlist', label: 'My List', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> },
-  { path: '/search', label: 'Search', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> },
+  { path: '/', labelKey: 'home', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+  { path: '/browse', labelKey: 'browse', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+  { path: '/live', labelKey: 'live_tv', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48 0a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/></svg> },
+  { path: '/watchlist', labelKey: 'my_list', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> },
+  { path: '/search', labelKey: 'search', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> },
 ];
 
 const SECTIONS = [
-  { path: '/browse', label: 'African Movies' },
-  { path: '/browse', label: 'International' },
-  { path: '/browse', label: 'Sports' },
-  { path: '/browse', label: 'Documentaries' },
-  { path: '/browse', label: 'Religious' },
+  { path: '/browse', labelKey: 'african_movies', genre: 'nollywood' },
+  { path: '/browse', labelKey: 'international', genre: 'international' },
+  { path: '/browse', labelKey: 'sports', genre: 'sports' },
+  { path: '/browse', labelKey: 'documentaries', genre: 'documentaries' },
+  { path: '/browse', labelKey: 'religious', genre: 'religious' },
 ];
 
 const BOTTOM_NAV = [
-  { path: '/', label: 'Home', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
-  { path: '/browse', label: 'Browse', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-  { path: '/live', label: 'Live', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48 0a6 6 0 010-8.49"/></svg> },
-  { path: '/profile', label: 'Profile', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
-  { path: '/watchlist', label: 'My List', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> },
+  { path: '/', labelKey: 'home', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+  { path: '/browse', labelKey: 'browse', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+  { path: '/live', labelKey: 'live', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48 0a6 6 0 010-8.49"/></svg> },
+  { path: '/profile', labelKey: 'profile', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+  { path: '/watchlist', labelKey: 'my_list', icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> },
 ];
 
 function Sidebar() {
+  const { t } = useI18n();
   const location = useLocation();
   const { user, logout } = useAuth();
 
@@ -69,7 +71,7 @@ function Sidebar() {
           fontSize: '.58rem', fontWeight: 800, letterSpacing: '.14em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,.2)',
           padding: '0 10px 6px', margin: 0
-        }}>Main</p>
+        }}>{t('home')}</p>
         {MAIN_NAV.map(item => {
           const active = location.pathname === item.path;
           return (
@@ -82,7 +84,7 @@ function Sidebar() {
               borderLeft: `2px solid ${active ? '#e50914' : 'transparent'}`
             }}>
               <span style={{ color: active ? '#e50914' : 'rgba(255,255,255,.3)', flexShrink: 0 }}>{item.icon}</span>
-              <span style={{ fontSize: '.82rem', fontWeight: active ? 700 : 500 }}>{item.label}</span>
+              <span style={{ fontSize: '.82rem', fontWeight: active ? 700 : 500 }}>{t(item.labelKey)}</span>
             </Link>
           );
         })}
@@ -94,13 +96,13 @@ function Sidebar() {
           fontSize: '.58rem', fontWeight: 800, letterSpacing: '.14em',
           textTransform: 'uppercase', color: 'rgba(255,255,255,.2)',
           padding: '0 10px 6px', margin: 0
-        }}>Sections</p>
+        }}>{t('sections')}</p>
         {SECTIONS.map(item => (
-          <Link key={item.label} to={item.path} style={{
+          <Link key={item.labelKey} to={item.genre ? `${item.path}?genre=${item.genre}` : item.path} style={{
             display: 'block', padding: '8px 10px', borderRadius: 8,
             textDecoration: 'none', color: 'rgba(255,255,255,.38)',
             fontSize: '.8rem', marginBottom: 1
-          }}>{item.label}</Link>
+          }}>{t(item.labelKey)}</Link>
         ))}
       </div>
 
@@ -168,6 +170,7 @@ function Sidebar() {
 }
 
 function MobileTopNav() {
+  const { t } = useI18n();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -209,6 +212,7 @@ function MobileTopNav() {
 }
 
 function MobileBottomNav() {
+  const { t } = useI18n();
   const location = useLocation();
   return (
     <nav style={{
@@ -230,7 +234,7 @@ function MobileBottomNav() {
           }}>
             {item.icon}
             <span style={{ fontSize: '.58rem', fontWeight: active ? 800 : 500, letterSpacing: '.02em' }}>
-              {item.label}
+              {t(item.labelKey)}
             </span>
           </Link>
         );
