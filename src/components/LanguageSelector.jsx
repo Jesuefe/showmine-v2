@@ -26,7 +26,8 @@ export default function LanguageSelector({ compact = false }) {
           <div style={{
             position: 'absolute', top: '110%', right: 0, zIndex: 1000,
             background: '#161616', border: '1px solid rgba(255,255,255,.1)',
-            borderRadius: 12, overflow: 'hidden', minWidth: 180,
+            borderRadius: 12, overflow: 'hidden',
+            width: 'min(180px, calc(100vw - 32px))',
             maxHeight: 320, overflowY: 'auto',
             boxShadow: '0 8px 30px rgba(0,0,0,.5)'
           }}>

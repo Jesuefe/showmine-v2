@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { showInterstitial, isAdMobAvailable } from '../services/admob';
 import { useParams, useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
 import client from '../api/client';
@@ -163,6 +164,17 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId }) {
           completed: 0,
         }).catch(() => {});
         dataTrackRef.current.lastSentBytes = dataTrackRef.current.bytesEstimate;
+      }
+      // Mid-roll AdMob every 20 minutes
+      const playedSeconds = dataTrackRef.current.bytesEstimate / (0.2 * 1024 * 1024) * 5;
+      if (isAdMobAvailable() && playedSeconds - dataTrackRef.current.lastMidroll >= 1200) {
+        dataTrackRef.current.lastMidroll = playedSeconds;
+        const vid = videoRef.current;
+        if (vid) vid.pause();
+        showInterstitial(() => {
+          const vid2 = videoRef.current;
+          if (vid2) vid2.play().catch(() => {});
+        });
       }
     }, 5000);
     return () => {
@@ -765,7 +777,14 @@ export default function Watch() {
               {movie.genre_names && <span style={{ color: 'rgba(255,255,255,.4)' }}>{movie.genre_names.split(',')[0]}</span>}
             </div>
             {access?.ok ? (
-              <button onClick={() => { setPlaying(true); if (ad) setShowAd(true); }} style={{
+              <button onClick={() => {
+                  const startPlay = () => { setPlaying(true); if (ad) setShowAd(true); };
+                  if (isAdMobAvailable()) {
+                    showInterstitial(startPlay);
+                  } else {
+                    startPlay();
+                  }
+                }} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 8,
                 background: '#e50914', color: '#fff', border: 'none', borderRadius: 8,
                 padding: '.82rem 1.8rem', fontFamily: "'Barlow Condensed', sans-serif",

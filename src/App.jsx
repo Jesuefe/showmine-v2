@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { initAdMob } from './services/admob';
 import { AuthProvider } from './context/AuthContext';
 import { I18nProvider } from './i18n/I18nContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -34,8 +36,17 @@ function PL({ children }) {
   );
 }
 
+function AdMobInitializer() {
+  useEffect(() => {
+    initAdMob();
+  }, []);
+  return null;
+}
+
 export default function App() {
   return (
+    <>
+    <AdMobInitializer />
     <BrowserRouter>
       <I18nProvider>
       <AuthProvider>
@@ -66,5 +77,6 @@ export default function App() {
       </AuthProvider>
       </I18nProvider>
     </BrowserRouter>
+    </>
   );
 }
