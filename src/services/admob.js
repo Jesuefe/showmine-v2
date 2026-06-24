@@ -1,6 +1,6 @@
-import { AdMob, InterstitialAdPluginEvents } from '@capacitor-community/admob';
+﻿import { AdMob, InterstitialAdPluginEvents } from '@capacitor-community/admob';
 
-const INTERSTITIAL_ID = 'ca-app-pub-3940256099942544/1033173712'; // Test ID
+const INTERSTITIAL_ID = 'ca-app-pub-1838174422371783/5805348252'; // Production ID
 
 let initialized = false;
 let interstitialReady = false;
@@ -11,8 +11,6 @@ export async function initAdMob() {
   try {
     await AdMob.initialize({
       requestTrackingAuthorization: true,
-      initializeForTesting: true,
-      testingDevices: ['F2C4507185425DC82A34BF9D8A03E961'],
     });
     initialized = true;
     await prepareInterstitial();
@@ -24,7 +22,7 @@ export async function initAdMob() {
 export async function prepareInterstitial() {
   if (!initialized) return;
   try {
-    await AdMob.prepareInterstitial({ adId: INTERSTITIAL_ID, isTesting: true });
+    await AdMob.prepareInterstitial({ adId: INTERSTITIAL_ID });
     interstitialReady = true;
     retryCount = 0;
   } catch (e) {

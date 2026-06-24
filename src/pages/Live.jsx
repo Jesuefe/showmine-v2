@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Hls from 'hls.js';
 import client from '../api/client';
@@ -82,7 +82,7 @@ export default function Live() {
             <div style={{ paddingTop: 60 }}>
         <div style={{ display: 'flex', gap: 0, maxWidth: 1400, margin: '0 auto' }}>
 
-          {/* ── MAIN CONTENT ── */}
+          {/*  MAIN CONTENT  */}
           <div style={{ flex: 1, minWidth: 0 }}>
 
             {/* Player */}
@@ -165,7 +165,7 @@ export default function Live() {
                           border: '1px solid rgba(255,255,255,.1)',
                           color: 'rgba(255,255,255,.4)',
                           padding: '2px 8px', borderRadius: 4
-                        }}>Free · External Stream</span>
+                        }}>Free  External Stream</span>
                       )}
                     </div>
                     {watching.description && (

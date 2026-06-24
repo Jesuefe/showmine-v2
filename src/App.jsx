@@ -1,6 +1,5 @@
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+﻿import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { App as CapApp } from '@capacitor/app';
 import { initAdMob } from './services/admob';
 import { initPushNotifications } from './services/notifications';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -54,14 +53,16 @@ function PushNotificationInitializer() {
 function DeepLinkHandler() {
   const navigate = useNavigate();
   useEffect(() => {
-    CapApp.addListener('appUrlOpen', (event) => {
-      try {
-        const url = new URL(event.url);
-        const path = url.pathname;
-        if (path) navigate(path);
-      } catch (e) {}
-    });
-    return () => { CapApp.removeAllListeners(); };
+    if (!window.Capacitor?.isNativePlatform?.()) return;
+    import('@capacitor/app').then((mod) => {
+      mod.App.addListener('appUrlOpen', (event) => {
+        try {
+          const url = new URL(event.url);
+          const path = url.pathname;
+          if (path) navigate(path);
+        } catch (e) {}
+      });
+    }).catch(() => {});
   }, []);
   return null;
 }
@@ -105,3 +106,6 @@ export default function App() {
     </>
   );
 }
+
+
+

@@ -3,12 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 
 const SECTIONS = [
-  { label: 'Nollywood',     sub: 'Nigerian Â· Yoruba Â· Igbo Â· Hausa', color: '#e50914', genre: 'nollywood' },
-  { label: 'International', sub: 'Hollywood Â· K-Drama Â· Bollywood',  color: '#3b82f6', genre: 'international' },
-  { label: 'Sports',        sub: 'Football Â· Basketball Â· Athletics', color: '#22c55e', genre: 'sports' },
-  { label: 'Documentaries', sub: 'Nature Â· History Â· True Crime',     color: '#a855f7', genre: 'documentaries' },
-  { label: 'Religious',     sub: 'Christian Â· Muslim Â· Faith',        color: '#f59e0b', genre: 'religious' },
-  { label: 'Kids Zone',     sub: 'Animation Â· Education Â· Quizzes',   color: '#ec4899', genre: 'kids' },
+  { label: 'Nollywood',     sub: 'Nigerian · Yoruba · Igbo · Hausa', color: '#e50914', genre: 'nollywood' },
+  { label: 'International', sub: 'Hollywood · K-Drama · Bollywood',  color: '#3b82f6', genre: 'international' },
+  { label: 'Sports',        sub: 'Football · Basketball · Athletics', color: '#22c55e', genre: 'sports' },
+  { label: 'Documentaries', sub: 'Nature · History · True Crime',     color: '#a855f7', genre: 'documentary' },
+  { label: 'Religious',     sub: 'Christian · Muslim · Faith',        color: '#f59e0b', genre: 'religious' },
+  { label: 'Kids Zone',     sub: 'Animation · Education · Quizzes',   color: '#ec4899', genre: 'kids' },
 ];
 
 function MovieCard({ movie }) {
@@ -41,7 +41,7 @@ function MovieCard({ movie }) {
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
         }}>{movie.title}</div>
         <div style={{ fontSize: '.64rem', color: 'rgba(255,255,255,.3)', marginTop: 2 }}>
-          {movie.release_year}{movie.language ? ` Â· ${movie.language}` : ''}
+          {movie.release_year}{movie.language ? ` · ${movie.language}` : ''}
         </div>
       </div>
     </div>
@@ -123,7 +123,7 @@ export default function Browse() {
               }}>{l}</button>
             ))}
             <div style={{ flex: 1 }} />
-            {[['popular', 'Popular'], ['new', 'Newest'], ['az', 'Aâ€“Z']].map(([v, l]) => (
+            {[['popular', 'Popular'], ['new', 'Newest'], ['az', 'A"“Z']].map(([v, l]) => (
               <button key={v} onClick={() => setParam('sort', v)} style={{
                 flexShrink: 0, padding: '7px 16px', borderRadius: 20,
                 fontSize: '.78rem', fontWeight: 700, border: '1.5px solid',
@@ -210,7 +210,7 @@ export default function Browse() {
           ) : movies.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'rgba(255,255,255,.3)' }}>
               <p style={{ fontSize: '.9rem' }}>
-                {q ? `No results for "${q}"` : genre ? `No ${genre} content available yet â€” check back soon` : 'No content available'}
+                {q ? `No results for "${q}"` : genre ? `No ${genre} content available yet "” check back soon` : 'No content available'}
               </p>
               {(q || type || genre) && (
                 <button onClick={() => setSearchParams({})} style={{
@@ -234,5 +234,7 @@ export default function Browse() {
     </div>
   );
 }
+
+
 
 

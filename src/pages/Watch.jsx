@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { showInterstitial, isAdMobAvailable } from '../services/admob';
 import { useParams, useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
@@ -47,9 +47,9 @@ function MovieCard({ movie }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// 
 // SHOWMINE PLAYER
-// ─────────────────────────────────────────────
+// 
 function ShowminePlayer({ url, streamType, title, onBack, movieId }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
@@ -487,9 +487,9 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// 
 // AD PLAYER
-// ─────────────────────────────────────────────
+// 
 function AdPlayer({ ad, onFinish, movieId }) {
   const videoRef = useRef(null);
   const [timeLeft, setTimeLeft] = useState(ad.max_length || 30);
@@ -555,7 +555,7 @@ function AdPlayer({ ad, onFinish, movieId }) {
         <div style={{ height: '100%', background: '#e50914', width: `${(elapsed / maxLen) * 100}%`, transition: 'width .5s linear' }} />
       </div>
       {canSkip && ad.skippable ? (
-        <button onClick={finishAd} style={{ position: 'absolute', bottom: 50, right: 16, zIndex: 10, background: 'rgba(0,0,0,.8)', border: '1px solid rgba(255,255,255,.3)', color: '#fff', padding: '8px 16px', borderRadius: 6, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.85rem', fontWeight: 800, letterSpacing: '.04em', cursor: 'pointer' }}>Skip Ad ›</button>
+        <button onClick={finishAd} style={{ position: 'absolute', bottom: 50, right: 16, zIndex: 10, background: 'rgba(0,0,0,.8)', border: '1px solid rgba(255,255,255,.3)', color: '#fff', padding: '8px 16px', borderRadius: 6, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.85rem', fontWeight: 800, letterSpacing: '.04em', cursor: 'pointer' }}>Skip Ad &rsaquo;</button>
       ) : ad.skippable ? (
         <div style={{ position: 'absolute', bottom: 50, right: 16, zIndex: 10, background: 'rgba(0,0,0,.7)', border: '1px solid rgba(255,255,255,.2)', color: 'rgba(255,255,255,.6)', padding: '8px 16px', borderRadius: 6, fontSize: '.82rem' }}>Skip in {Math.max(0, skipAt - elapsed)}s</div>
       ) : null}
@@ -564,11 +564,23 @@ function AdPlayer({ ad, onFinish, movieId }) {
   );
 }
 
-// ─────────────────────────────────────────────
+// 
 // WATCH PAGE
-// ─────────────────────────────────────────────
+// 
 export default function Watch() {
   const { slug } = useParams();
+  const isNativeApp = !!(window.Capacitor?.isNativePlatform?.() || window.Android);
+  if (!isNativeApp) return (
+    <div style={{ background: '#000', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '2rem', textAlign: 'center' }}>
+      <img src='https://showmine24.b-cdn.net/1024.png' style={{ width: 80, height: 80, borderRadius: 16, marginBottom: '1.5rem' }} alt='Showmine TV' />
+      <h2 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '.5rem' }}>Watch on the App</h2>
+      <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.9rem', marginBottom: '2rem', maxWidth: 300 }}>Download the Showmine TV app for the best streaming experience.</p>
+      <a href='https://play.google.com/store/apps/details?id=com.showminetventertainment.showminetvapptv' target='_blank' rel='noopener noreferrer'
+        style={{ background: '#e50914', color: '#fff', borderRadius: 10, padding: '14px 28px', fontSize: '1rem', fontWeight: 800, textDecoration: 'none' }}>
+        Download App
+      </a>
+    </div>
+  );
   const navigate = useNavigate();
 
   const [data, setData] = useState(null);
@@ -600,7 +612,7 @@ export default function Watch() {
       .catch(() => setError('Failed to load movie'))
       .finally(() => setLoading(false));
 
-    // Fetch ad — absolute URL for Capacitor
+    // Fetch ad " absolute URL for Capacitor
     fetch(`${API_BASE}/ads.php?action=get`, { credentials: 'include' })
       .then(r => r.json())
       .then(d => { if (d.ok && d.ad) setAd(d.ad); })
@@ -629,10 +641,16 @@ export default function Watch() {
 
       {!playing ? (
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', maxHeight: '82vh', background: '#000', overflow: 'hidden' }}>
-          {movie.banner_image && (
+          {movie.trailer_url ? (
+            <iframe
+              src={`https://www.youtube.com/embed/${getYouTubeId(movie.trailer_url)}?autoplay=1&mute=1&loop=1&playlist=${getYouTubeId(movie.trailer_url)}&rel=0&controls=0`}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none' }}
+              allow='autoplay; encrypted-media'
+            />
+          ) : movie.banner_image ? (
             <img src={movie.banner_image} alt={movie.title}
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          )}
+          ) : null}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.2) 50%, transparent 100%)' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '2rem 24px 1.5rem' }}>
             <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 'clamp(1.6rem,4vw,2.8rem)', fontWeight: 900, marginBottom: '.4rem' }}>{movie.title}</h1>
@@ -667,7 +685,7 @@ export default function Watch() {
                 background: '#e50914', color: '#fff', border: 'none', borderRadius: 8,
                 padding: '.82rem 1.8rem', fontFamily: "'Barlow Condensed', sans-serif",
                 fontSize: '1rem', fontWeight: 900, cursor: 'pointer'
-              }}>🔒 Subscribe to Watch</button>
+              }}> Subscribe to Watch</button>
             )}
           </div>
         </div>
@@ -708,14 +726,7 @@ export default function Watch() {
         </div>
 
         <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
-          {access?.ok && !playing && (
-            <button onClick={() => setPlaying(true)} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '.42rem .9rem', background: 'rgba(229,9,20,.1)',
-              border: '1px solid rgba(229,9,20,.25)', borderRadius: 8,
-              color: '#ff6b6b', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
-            }}>▶ Watch Now</button>
-          )}
+          
           <button onClick={async () => {
             const action = inWatchlist ? 'watchlist_remove' : 'watchlist_add';
             await client.post(`/movies.php?action=${action}`, { movie_id: movie.id });
@@ -727,7 +738,7 @@ export default function Watch() {
             border: `1px solid ${inWatchlist ? 'rgba(34,197,94,.25)' : 'rgba(255,255,255,.1)'}`,
             borderRadius: 8, color: inWatchlist ? '#22c55e' : 'rgba(255,255,255,.8)',
             fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
-          }}>{inWatchlist ? '✓ In My List' : '+ My List'}</button>
+          }}>{inWatchlist ? 'In My List' : '+ My List'}</button>
           <button onClick={() => {
             const url = `https://v2.showmine.ng/watch/${movie.slug}`;
             if (navigator.share) navigator.share({ title: movie.title, url });
@@ -737,7 +748,7 @@ export default function Watch() {
             padding: '.42rem .9rem', background: 'rgba(255,255,255,.06)',
             border: '1px solid rgba(255,255,255,.1)', borderRadius: 8,
             color: 'rgba(255,255,255,.8)', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
-          }}>↗ Share</button>
+          }}>Share</button>
         </div>
 
         {movie.short_desc && <p style={{ color: 'rgba(255,255,255,.7)', fontSize: '.86rem', lineHeight: 1.75, maxWidth: 680, marginBottom: '1rem' }}>{movie.short_desc}</p>}
@@ -761,7 +772,7 @@ export default function Watch() {
               }
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.85)', marginBottom: 3 }}>E{ep.episode_number}: {ep.title}</div>
-                <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)' }}>{ep.duration_mins ? `${ep.duration_mins} min` : ''} {ep.air_date ? `· ${ep.air_date}` : ''}</div>
+                <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)' }}>{ep.duration_mins ? `${ep.duration_mins} min` : ''} {ep.air_date ? ` ${ep.air_date}` : ''}</div>
               </div>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'rgba(255,255,255,.3)', flexShrink: 0 }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
@@ -780,3 +791,6 @@ export default function Watch() {
     </div>
   );
 }
+
+
+
