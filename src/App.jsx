@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { App as CapApp } from '@capacitor/app';
 import { initAdMob } from './services/admob';
-import { AuthProvider } from './context/AuthContext';
+import { initPushNotifications } from './services/notifications';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { I18nProvider } from './i18n/I18nContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -37,8 +39,29 @@ function PL({ children }) {
 }
 
 function AdMobInitializer() {
+  useEffect(() => { initAdMob(); }, []);
+  return null;
+}
+
+function PushNotificationInitializer() {
+  const { user } = useAuth();
   useEffect(() => {
-    initAdMob();
+    if (user?.id) initPushNotifications(user.id);
+  }, [user?.id]);
+  return null;
+}
+
+function DeepLinkHandler() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    CapApp.addListener('appUrlOpen', (event) => {
+      try {
+        const url = new URL(event.url);
+        const path = url.pathname;
+        if (path) navigate(path);
+      } catch (e) {}
+    });
+    return () => { CapApp.removeAllListeners(); };
   }, []);
   return null;
 }
@@ -46,37 +69,39 @@ function AdMobInitializer() {
 export default function App() {
   return (
     <>
-    <AdMobInitializer />
-    <BrowserRouter>
-      <I18nProvider>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login"        element={<Login />} />
-          <Route path="/register"     element={<Register />} />
-          <Route path="/onboarding"   element={<Onboarding />} />
-          <Route path="/"             element={<PL><Home /></PL>} />
-          <Route path="/browse"       element={<PL><Browse /></PL>} />
-          <Route path="/watch/:slug"  element={<PL><Watch /></PL>} />
-          <Route path="/live"         element={<PL><Live /></PL>} />
-          <Route path="/search"       element={<PL><Search /></PL>} />
-          <Route path="/profile"      element={<PL><Profile /></PL>} />
-          <Route path="/subscribe"    element={<PL><Subscribe /></PL>} />
-          <Route path="/watchlist"    element={<PL><Watchlist /></PL>} />
-          <Route path="/coming-soon"  element={<PL><ComingSoon /></PL>} />
-          <Route path="/subscribe/verify" element={<SubscribeVerify />} />
-           <Route path="/tv-login"      element={<TVLogin />} />
-           <Route path="/scan-login"    element={<ScanLogin />} />
-           <Route path="/sessions"     element={<PL><Sessions /></PL>} />
-           <Route path="/data-usage"   element={<PL><DataUsage /></PL>} />
-           <Route path="/kids"          element={<PL><Kids /></PL>} />
-           <Route path="/kids-setup"    element={<PL><KidsSetup /></PL>} />
-           <Route path="/terms"             element={<Terms />} />
-           <Route path="/privacy"       element={<Privacy />} />
-           <Route path="*"             element={<NotFound />} />
-        </Routes>
-      </AuthProvider>
-      </I18nProvider>
-    </BrowserRouter>
+      <AdMobInitializer />
+      <BrowserRouter>
+        <DeepLinkHandler />
+        <I18nProvider>
+          <AuthProvider>
+            <PushNotificationInitializer />
+            <Routes>
+              <Route path="/login"            element={<Login />} />
+              <Route path="/register"         element={<Register />} />
+              <Route path="/onboarding"       element={<Onboarding />} />
+              <Route path="/"                 element={<PL><Home /></PL>} />
+              <Route path="/browse"           element={<PL><Browse /></PL>} />
+              <Route path="/watch/:slug"      element={<PL><Watch /></PL>} />
+              <Route path="/live"             element={<PL><Live /></PL>} />
+              <Route path="/search"           element={<PL><Search /></PL>} />
+              <Route path="/profile"          element={<PL><Profile /></PL>} />
+              <Route path="/subscribe"        element={<PL><Subscribe /></PL>} />
+              <Route path="/watchlist"        element={<PL><Watchlist /></PL>} />
+              <Route path="/coming-soon"      element={<PL><ComingSoon /></PL>} />
+              <Route path="/subscribe/verify" element={<SubscribeVerify />} />
+              <Route path="/tv-login"         element={<TVLogin />} />
+              <Route path="/scan-login"       element={<ScanLogin />} />
+              <Route path="/sessions"         element={<PL><Sessions /></PL>} />
+              <Route path="/data-usage"       element={<PL><DataUsage /></PL>} />
+              <Route path="/kids"             element={<PL><Kids /></PL>} />
+              <Route path="/kids-setup"       element={<PL><KidsSetup /></PL>} />
+              <Route path="/terms"            element={<Terms />} />
+              <Route path="/privacy"          element={<Privacy />} />
+              <Route path="*"                 element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </I18nProvider>
+      </BrowserRouter>
     </>
   );
 }

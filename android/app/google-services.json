@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070220803549",
+    "project_id": "showmine-7d5a2",
+    "storage_bucket": "showmine-7d5a2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070220803549:android:b1a4b90400f0fde2b2ca34",
+        "android_client_info": {
+          "package_name": "com.showminetventertainment.showminetvapptv"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXCSYiDFyP4aeG9SDBi91q0t5yH0aTgLw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

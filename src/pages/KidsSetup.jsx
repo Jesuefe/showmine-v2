@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 
@@ -184,3 +184,4 @@ export default function KidsSetup() {
     </div>
   );
 }
+
