@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://app.showmine.ng',
+        target: 'https://v2.showmine.ng',
         changeOrigin: true,
         secure: true,
       }

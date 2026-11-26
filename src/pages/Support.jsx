@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { isNativeApp } from '../utils/platform';
 import { useNavigate, useParams } from 'react-router-dom';
 import { support as supportApi } from '../api/extras';
 import { useSupport } from '../context/SupportContext';
@@ -38,6 +39,7 @@ export function SupportList() {
           <button onClick={() => openSupport('manual')} style={{ background: '#e50914', border: 'none', color: '#fff', borderRadius: 12, padding: '12px 20px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', cursor: 'pointer' }}>New message</button>
         </div>
 
+        {isNativeApp() && (
         <label style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 16, background: '#101013', border: '1px solid rgba(255,255,255,.06)', marginBottom: 20, cursor: 'pointer' }}>
           <span style={{ fontSize: '1.4rem' }}>📳</span>
           <span style={{ flex: 1 }}>
@@ -48,6 +50,7 @@ export function SupportList() {
             <span style={{ position: 'absolute', top: 3, left: shakeOn ? 21 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
           </span>
         </label>
+        )}
 
         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.7rem', fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', margin: '0 4px 8px' }}>Your tickets</div>
         {tickets === null && <div style={{ color: 'rgba(255,255,255,.4)', fontSize: '.85rem', padding: 16 }}>Loading…</div>}

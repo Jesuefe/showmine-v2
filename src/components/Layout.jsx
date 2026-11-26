@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import GetAppBanner from './GetAppBanner';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from './LanguageSelector';
@@ -274,6 +275,7 @@ export default function Layout({ children }) {
 
       {/* Mobile bottom nav */}
       {isMobile && !kidsMode && <MobileBottomNav />}
+      {isMobile && !kidsMode && !isFullScreen && <GetAppBanner />}
 
       <style>{`
         * { scrollbar-width: none; -ms-overflow-style: none; }

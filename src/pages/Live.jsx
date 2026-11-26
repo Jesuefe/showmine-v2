@@ -114,7 +114,7 @@ export default function Live() {
                   allowFullScreen
                 />
               ) : (
-                <video ref={videoRef} controls playsInline
+                <video ref={videoRef} controls playsInline controlsList="nodownload" onContextMenu={e => e.preventDefault()}
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
               )}
 

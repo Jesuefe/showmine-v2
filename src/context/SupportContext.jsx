@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { isNativeApp } from '../utils/platform';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { support as supportApi } from '../api/extras';
 import { getDeviceInfo } from '../services/device';
@@ -143,7 +144,7 @@ export function SupportProvider({ children }) {
   const openSupport = useCallback((src = 'manual') => setOpen(src), []);
   const setShake = useCallback((v) => { try { localStorage.setItem(SHAKE_KEY, v ? '1' : '0'); } catch { /* ignore */ } setShakeOn(v); }, []);
 
-  useShake(() => setOpen(o => o || 'shake'), !!user && !kidsMode && shakeOn);
+  useShake(() => setOpen(o => o || 'shake'), isNativeApp() && !!user && !kidsMode && shakeOn);
 
   return (
     <SupportContext.Provider value={{ openSupport, shakeOn, setShake }}>
