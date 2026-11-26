@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
 import client from '../api/client';
 
-const API_BASE = 'https://app.showmine.ng/api/v2';
+const API_BASE = 'https://v2.showmine.ng/api/v2';
 
 function getYouTubeId(url) {
   if (!url) return '';

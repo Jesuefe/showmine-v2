@@ -17,7 +17,7 @@ export async function initPushNotifications(userId) {
     await PushNotifications.addListener('registration', async (token) => {
       console.log('FCM Token:', token.value);
       try {
-        await fetch('https://app.showmine.ng/api/v2/notifications.php?action=register', {
+        await fetch('https://v2.showmine.ng/api/v2/notifications.php?action=register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-Auth-Token': localStorage.getItem('showmine_token') || '' },
           credentials: 'include',

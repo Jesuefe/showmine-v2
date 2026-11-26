@@ -3,7 +3,7 @@ import axios from 'axios';
 const TOKEN_KEY = 'showmine_token';
 
 const client = axios.create({
-  baseURL: 'https://app.showmine.ng/api/v2',
+  baseURL: 'https://v2.showmine.ng/api/v2',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

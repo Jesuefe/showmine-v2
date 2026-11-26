@@ -177,7 +177,7 @@ export default function Live() {
                 </div>
                 {/* Share button */}
                 <button onClick={() => {
-                  const url = `https://app.showmine.ng/live.php?id=${watching.id}`;
+                  const url = `https://v2.showmine.ng/live`;
                   if (navigator.share) navigator.share({ title: watching.title, url });
                   else { navigator.clipboard?.writeText(url); alert('Link copied!'); }
                 }} style={{

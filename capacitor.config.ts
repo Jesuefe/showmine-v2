@@ -13,6 +13,16 @@ const config: CapacitorConfig = {
       androidScaleType: 'CENTER_INSIDE',
       showSpinner: false,
     },
+    // Live updates from our own VPS (no Capgo cloud). Web-only changes ship
+    // without a Play upload; native changes still need a new AAB.
+    CapacitorUpdater: {
+      autoUpdate: true,
+      updateUrl: 'https://v2.showmine.ng/ota/check.php',
+      statsUrl: '',
+      channelUrl: '',
+      appReadyTimeout: 15000,
+      resetWhenUpdate: true,
+    },
     AdMob: {
       androidAppId: 'ca-app-pub-1838174422371783~5904552034',
     },
