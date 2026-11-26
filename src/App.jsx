@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { initAdMob } from './services/admob';
 import { initPushNotifications } from './services/notifications';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { KidsProvider, KidsGuard } from './context/KidsContext';
 import { I18nProvider } from './i18n/I18nContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -79,7 +80,9 @@ export default function App() {
         <DeepLinkHandler />
         <I18nProvider>
           <AuthProvider>
+           <KidsProvider>
             <PushNotificationInitializer />
+            <KidsGuard />
             <Routes>
               <Route path="/login"            element={<Login />} />
               <Route path="/register"         element={<Register />} />
@@ -108,6 +111,7 @@ export default function App() {
               <Route path="/privacy"          element={<Privacy />} />
               <Route path="*"                 element={<NotFound />} />
             </Routes>
+           </KidsProvider>
           </AuthProvider>
         </I18nProvider>
       </BrowserRouter>

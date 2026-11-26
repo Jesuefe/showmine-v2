@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from './LanguageSelector';
 import { useI18n } from '../i18n/I18nContext';
+import { useKids } from '../context/KidsContext';
 
 function useIsMobile() {
   // Check if it's a mobile/tablet device using user agent
@@ -244,6 +245,7 @@ function MobileBottomNav() {
 }
 
 export default function Layout({ children }) {
+  const { active: kidsMode } = useKids();
   const isMobile = useIsMobile();
   const location = useLocation();
   const isHeroPage = location.pathname === '/' || location.pathname.startsWith('/watch/');
@@ -253,25 +255,25 @@ export default function Layout({ children }) {
     <div style={{ background: '#000', minHeight: '100vh', display: 'flex' }}>
 
       {/* Desktop sidebar */}
-      {!isMobile && <Sidebar />}
+      {!isMobile && !kidsMode && <Sidebar />}
 
       {/* Main content */}
       <div style={{
         flex: 1,
-        marginLeft: isMobile ? 0 : 220,
+        marginLeft: isMobile || kidsMode ? 0 : 220,
         minWidth: 0,
         overflowX: 'hidden',
-        paddingTop: isMobile && !isHeroPage && !isFullScreen ? 60 : 0,
-        paddingBottom: isMobile ? 64 : 40,
+        paddingTop: isMobile && !isHeroPage && !isFullScreen && !kidsMode ? 60 : 0,
+        paddingBottom: kidsMode ? 0 : isMobile ? 64 : 40,
       }}>
         {/* Mobile top nav */}
-        {isMobile && !isFullScreen && <MobileTopNav />}
+        {isMobile && !isFullScreen && !kidsMode && <MobileTopNav />}
 
         {children}
       </div>
 
       {/* Mobile bottom nav */}
-      {isMobile && <MobileBottomNav />}
+      {isMobile && !kidsMode && <MobileBottomNav />}
 
       <style>{`
         * { scrollbar-width: none; -ms-overflow-style: none; }

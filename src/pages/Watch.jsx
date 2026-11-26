@@ -5,6 +5,7 @@ import Hls from 'hls.js';
 import { progress as progressApi, social } from '../api/extras';
 import { CommentList } from '../components/Comments';
 import client from '../api/client';
+import { useKids } from '../context/KidsContext';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
 
@@ -619,6 +620,7 @@ export default function Watch() {
     </div>
   );
   const navigate = useNavigate();
+  const { active: kidsMode } = useKids();
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -673,9 +675,10 @@ export default function Watch() {
   );
 
   if (error) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', flexDirection: 'column', gap: '1rem' }}>
-      <p style={{ color: 'rgba(255,255,255,.5)' }}>{error}</p>
-      <button onClick={() => navigate('/')} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 8, padding: '.75rem 1.5rem', cursor: 'pointer', fontWeight: 700 }}>Go Home</button>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', flexDirection: 'column', gap: '1rem', textAlign: 'center', padding: '0 24px' }}>
+      {error === 'kids_locked' && <div style={{ fontSize: '3rem' }}>🙈</div>}
+      <p style={{ color: 'rgba(255,255,255,.6)' }}>{error === 'kids_locked' ? 'This show isn’t available in Kids Mode.' : error}</p>
+      <button onClick={() => navigate(kidsMode ? '/kids' : '/')} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 8, padding: '.75rem 1.5rem', cursor: 'pointer', fontWeight: 700 }}>{kidsMode ? 'Back to Kids' : 'Go Home'}</button>
     </div>
   );
 
@@ -689,6 +692,17 @@ export default function Watch() {
 
   return (
     <div style={{ background: '#000', minHeight: '100vh' }}>
+      {kidsMode && !playing && (
+        <button onClick={() => navigate('/kids')} aria-label="Back to Kids" style={{
+          position: 'fixed', top: 'calc(env(safe-area-inset-top) + 14px)', left: 14, zIndex: 50,
+          display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px 9px 10px', borderRadius: 999,
+          background: '#facc15', color: '#1a1033', border: 'none', fontWeight: 900, fontSize: '.85rem', cursor: 'pointer',
+          boxShadow: '0 6px 20px rgba(0,0,0,.45)'
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="15 18 9 12 15 6"/></svg>
+          Kids
+        </button>
+      )}
 
       {!playing ? (
         <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', maxHeight: '82vh', background: '#000', overflow: 'hidden' }}>
@@ -777,7 +791,7 @@ export default function Watch() {
           {movie.genre_names && <><span style={{ width: 3, height: 3, borderRadius: '50%', background: 'rgba(255,255,255,.3)', display: 'inline-block' }} /><span style={{ color: 'rgba(255,255,255,.3)' }}>{movie.genre_names}</span></>}
         </div>
 
-        <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
+        {!kidsMode && <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
           
           <button onClick={async () => {
             setLikes(l => ({ liked: !l.liked, count: l.count + (l.liked ? -1 : 1) }));
@@ -813,7 +827,7 @@ export default function Watch() {
             border: '1px solid rgba(255,255,255,.1)', borderRadius: 8,
             color: 'rgba(255,255,255,.8)', fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
           }}>Share</button>
-        </div>
+        </div>}
 
         {movie.short_desc && <p style={{ color: 'rgba(255,255,255,.7)', fontSize: '.86rem', lineHeight: 1.75, maxWidth: 680, marginBottom: '1rem' }}>{movie.short_desc}</p>}
         {movie.cast_names && <p style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.4)', marginBottom: '.3rem' }}><strong style={{ color: 'rgba(255,255,255,.7)' }}>Cast:</strong> {movie.cast_names}</p>}
@@ -858,14 +872,14 @@ export default function Watch() {
         </div>
       )}
 
-      <div style={{ maxWidth: 960, padding: '1.5rem 20px 0' }}>
+      {!kidsMode && <div style={{ maxWidth: 960, padding: '1.5rem 20px 0' }}>
         <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '.75rem' }}>
           Comments{commentCount ? ` (${commentCount})` : ''}
         </div>
         <CommentList type="movie" id={movie.id} onCount={setCommentCount} />
-      </div>
+      </div>}
 
-      {related?.length > 0 && (
+      {!kidsMode && related?.length > 0 && (
         <div style={{ marginTop: '1rem', paddingBottom: '2rem' }}>
           <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800, padding: '0 20px .5rem' }}>More Like This</div>
           <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '4px 20px 8px', scrollbarWidth: 'none' }}>

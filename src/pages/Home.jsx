@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslatedTitles, useTranslatedMovie } from '../i18n/useTranslatedContent';
 import client from '../api/client';
-import { progress as progressApi } from '../api/extras';
+import { progress as progressApi, shorts as shortsApi } from '../api/extras';
 import { useI18n } from '../i18n/I18nContext';
 
 function useIsMobile() {
@@ -90,6 +90,127 @@ function ContinueRow() {
     </div>
   );
 }
+
+const CATEGORIES = [
+  { label: 'Nollywood', genre: 'nollywood', emoji: '🎬' },
+  { label: 'International', genre: 'international', emoji: '🌍' },
+  { label: 'Sports', genre: 'sports', emoji: '⚽' },
+  { label: 'Documentaries', genre: 'documentary', emoji: '🎥' },
+  { label: 'Religious', genre: 'religious', emoji: '🙏' },
+  { label: 'Kids', genre: 'kids', emoji: '🧸' },
+];
+
+function RowTitle({ label, title, onSeeAll }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 20px .65rem' }}>
+      <div>
+        {label && <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.58rem', fontWeight: 800, letterSpacing: '.22em', textTransform: 'uppercase', color: '#e50914', marginBottom: 3 }}>{label}</div>}
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{title}</div>
+      </div>
+      {onSeeAll && (
+        <button onClick={onSeeAll} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,.35)', fontSize: '.68rem', fontWeight: 700, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '.06em', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 3 }}>
+          SEE ALL <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CategoryChips() {
+  const navigate = useNavigate();
+  return (
+    <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 20px 4px', marginBottom: '1.8rem', scrollbarWidth: 'none' }}>
+      {CATEGORIES.map(c => (
+        <button key={c.genre} className="home-press" onClick={() => navigate(`/browse?genre=${c.genre}`)} style={{
+          flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, padding: '9px 15px', borderRadius: 999,
+          background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#fff',
+          fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+        }}>
+          <span>{c.emoji}</span>{c.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Top10Row({ movies }) {
+  const navigate = useNavigate();
+  const { getTitle } = useTranslatedTitles(movies || []);
+  const list = (movies || []).slice(0, 10);
+  if (list.length < 3) return null;
+  return (
+    <div style={{ marginBottom: '2.2rem' }}>
+      <RowTitle label="Most watched" title="Top 10 Today" />
+      <div style={{ display: 'flex', gap: 4, overflowX: 'auto', padding: '2px 20px 8px', scrollbarWidth: 'none' }}>
+        {list.map((m, i) => (
+          <div key={m.id} className="home-press" onClick={() => navigate(`/watch/${m.slug}`)} style={{ flexShrink: 0, display: 'flex', alignItems: 'flex-end', cursor: 'pointer' }}>
+            <div style={{
+              fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '6.2rem', lineHeight: .78,
+              color: '#000', WebkitTextStroke: '2px rgba(255,255,255,.55)', marginRight: -14, zIndex: 0, letterSpacing: '-.04em',
+            }}>{i + 1}</div>
+            <div style={{ position: 'relative', zIndex: 1, width: 104, aspectRatio: '2/3', borderRadius: 10, overflow: 'hidden', background: '#161616', boxShadow: '0 6px 20px rgba(0,0,0,.6)' }}>
+              {m.cover_image && <img src={m.cover_image} alt={getTitle(m) || m.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ShortsRow() {
+  const navigate = useNavigate();
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    shortsApi.feed(1).then(r => { if (r.ok) setItems((r.items || []).slice(0, 8)); }).catch(() => {});
+  }, []);
+  if (!items.length) return null;
+  return (
+    <div style={{ marginBottom: '2.2rem' }}>
+      <RowTitle label="Quick clips" title="Shorts" onSeeAll={() => navigate('/shorts')} />
+      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '2px 20px 8px', scrollbarWidth: 'none' }}>
+        {items.map(it => (
+          <div key={it.id} className="home-press" onClick={() => navigate('/shorts')} style={{
+            flexShrink: 0, width: 118, aspectRatio: '9/16', borderRadius: 14, overflow: 'hidden', position: 'relative', cursor: 'pointer',
+            background: 'linear-gradient(160deg,#2a0a10,#0d0d12)', border: '1px solid rgba(255,255,255,.08)',
+          }}>
+            {it.thumbnail_url && <img src={it.thumbnail_url} alt={it.title || ''} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,.85), transparent 55%)' }} />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="rgba(255,255,255,.9)" style={{ position: 'absolute', top: 8, right: 8 }}><polygon points="7 4 20 12 7 20 7 4"/></svg>
+            <div style={{ position: 'absolute', left: 8, right: 8, bottom: 8 }}>
+              <div style={{ fontSize: '.7rem', fontWeight: 700, lineHeight: 1.25, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{it.title || it.movie_title || it.caption}</div>
+              {it.views > 0 && <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.55)', marginTop: 3 }}>{Intl.NumberFormat('en', { notation: 'compact' }).format(it.views)} views</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HomeSkeleton({ isMobile }) {
+  return (
+    <div style={{ background: '#000', minHeight: '100vh' }}>
+      <div className="home-skel" style={{ width: '100%', aspectRatio: isMobile ? '9/14' : '16/7', maxHeight: isMobile ? '88vh' : '82vh' }} />
+      {[0, 1].map(r => (
+        <div key={r} style={{ padding: '28px 20px 0' }}>
+          <div className="home-skel" style={{ width: 140, height: 16, borderRadius: 6, marginBottom: 12 }} />
+          <div style={{ display: 'flex', gap: 10, overflow: 'hidden' }}>
+            {Array.from({ length: 6 }).map((_, i) => <div key={i} className="home-skel" style={{ flexShrink: 0, width: 120, aspectRatio: '2/3', borderRadius: 10 }} />)}
+          </div>
+        </div>
+      ))}
+      <style>{HOME_CSS}</style>
+    </div>
+  );
+}
+
+const HOME_CSS = `
+  @keyframes homeShimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+  .home-skel { background: linear-gradient(90deg,#111 0%,#1c1c1c 50%,#111 100%); background-size: 800px 100%; animation: homeShimmer 1.3s linear infinite; }
+  .home-press { transition: transform .15s ease; }
+  .home-press:active { transform: scale(.96); }
+`;
 
 function MovieRow({ title, label, movies, seeAllPath }) {
   const navigate = useNavigate();
@@ -372,12 +493,7 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#000' }}>
-      <div style={{ width: 36, height: 36, border: '3px solid #1a1a1a', borderTop: '3px solid #e50914', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
-  );
+  if (loading) return <HomeSkeleton isMobile={isMobile} />;
 
   const heroMovies = data?.featured?.length ? data.featured : data?.trending?.slice(0, 5) || [];
 
@@ -385,14 +501,25 @@ export default function Home() {
     <div style={{ background: '#000', minHeight: '100vh' }}>
       <HeroSlider movies={heroMovies} isMobile={isMobile} />
 
-      <div style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,.07), transparent)', margin: '28px 0 24px' }} />
+      <div style={{ height: 22 }} />
+      <CategoryChips />
 
       <ContinueRow />
-      <MovieRow label="What's Hot"  title="Trending Now"  movies={data?.trending} seeAllPath="/browse" />
+      <Top10Row movies={data?.trending} />
+      <ShortsRow />
       <MovieRow label="No Cost"     title="Free to Watch" movies={data?.free}     seeAllPath="/browse" />
       <MovieRow label="Just Added"  title="New Arrivals"  movies={data?.new}      seeAllPath="/browse" />
+      <MovieRow label="What's Hot"  title="Trending Now"  movies={data?.trending?.slice(10)} seeAllPath="/browse" />
+
+      {!data && (
+        <div style={{ textAlign: 'center', padding: '3rem 20px', color: 'rgba(255,255,255,.5)' }}>
+          <div style={{ marginBottom: 12 }}>Couldn’t load the home page.</div>
+          <button onClick={() => window.location.reload()} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 8, padding: '.7rem 1.4rem', fontWeight: 700, cursor: 'pointer' }}>Try again</button>
+        </div>
+      )}
 
       <div style={{ height: 24 }} />
+      <style>{HOME_CSS}</style>
     </div>
   );
 }
