@@ -6,6 +6,9 @@ on:
     branches: [main, play-update-v1.2]
     tags: ['v*']
 
+permissions:
+  contents: write   # to publish the test APK as a pre-release
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -64,7 +67,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon --stacktrace
+          ./gradlew bundleRelease assembleDebug --no-daemon --stacktrace
 
       - name: Show signing certificate
         run: |
@@ -74,6 +77,24 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
+          name: showmine-tv-test-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
           name: showmine-tv-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
+
+      - name: Publish test APK as a pre-release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="test-${GITHUB_RUN_NUMBER}"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "showmine-tv-test-${GITHUB_RUN_NUMBER}.apk"
+          gh release create "$TAG" "showmine-tv-test-${GITHUB_RUN_NUMBER}.apk" \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Test build ${GITHUB_RUN_NUMBER} (${GITHUB_REF_NAME})" \
+            --notes "Test APK from ${GITHUB_SHA::7}. Installs as 'Showmine TV' next to the Play Store app (package com.showminetventertainment.showminetv.test). Not for Play upload."

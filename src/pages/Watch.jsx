@@ -2,6 +2,8 @@
 import { showInterstitial, isAdMobAvailable } from '../services/admob';
 import { useParams, useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
+import { progress as progressApi, social } from '../api/extras';
+import { CommentList } from '../components/Comments';
 import client from '../api/client';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
@@ -50,7 +52,7 @@ function MovieCard({ movie }) {
 // 
 // SHOWMINE PLAYER
 // 
-function ShowminePlayer({ url, streamType, title, onBack, movieId }) {
+function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const containerRef = useRef(null);
@@ -225,6 +227,41 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId }) {
       vid.removeEventListener('canplay', onCanPlay);
     };
   }, []);
+
+  // Resume where the viewer stopped, and save progress every 15s / on pause / on leave.
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid || !movieId) return;
+    let resumed = false;
+    let lastSaved = 0;
+    const save = () => {
+      const pos = Math.floor(vid.currentTime || 0);
+      const total = Math.floor(vid.duration || 0);
+      if (!total || !isFinite(total) || pos < 5 || Math.abs(pos - lastSaved) < 5) return;
+      lastSaved = pos;
+      progressApi.save(movieId, episodeId, pos, total).catch(() => {});
+    };
+    const onMeta = () => {
+      if (resumed) return;
+      resumed = true;
+      progressApi.get(movieId, episodeId).then((r) => {
+        const d = vid.duration || 0;
+        if (r?.ok && r.progress > 30 && (!d || r.progress < d - 60)) vid.currentTime = r.progress;
+      }).catch(() => {});
+    };
+    const timer = setInterval(() => { if (!vid.paused) save(); }, 15000);
+    vid.addEventListener('loadedmetadata', onMeta);
+    vid.addEventListener('pause', save);
+    vid.addEventListener('ended', save);
+    if (vid.readyState >= 1) onMeta();
+    return () => {
+      clearInterval(timer);
+      save();
+      vid.removeEventListener('loadedmetadata', onMeta);
+      vid.removeEventListener('pause', save);
+      vid.removeEventListener('ended', save);
+    };
+  }, [movieId, episodeId, url]);
 
   const showControlsTemp = useCallback(() => {
     setShowControls(true);
@@ -587,6 +624,10 @@ export default function Watch() {
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [episodeUrl, setEpisodeUrl] = useState(null);
+  const [episodeId, setEpisodeId] = useState(null);
+  const [season, setSeason] = useState(null);
+  const [likes, setLikes] = useState({ count: 0, liked: false });
+  const [commentCount, setCommentCount] = useState(0);
   const [ad, setAd] = useState(null);
   const [showAd, setShowAd] = useState(false);
   const [error, setError] = useState('');
@@ -598,12 +639,17 @@ export default function Watch() {
     setData(null);
     setError('');
     setEpisodeUrl(null);
+    setEpisodeId(null);
+    setSeason(null);
     client.get(`/movies.php?action=watch&slug=${slug}`)
       .then(res => {
         if (res.data.ok) {
           setData(res.data);
           client.get(`/movies.php?action=watchlist_check&movie_id=${res.data.movie?.id}`)
             .then(r => { if (r.data.ok) setInWatchlist(r.data.in_watchlist); })
+            .catch(() => {});
+          social.likes('movie', res.data.movie?.id)
+            .then(r => { if (r.ok) setLikes({ count: r.count, liked: r.liked }); })
             .catch(() => {});
         } else {
           setError(res.data.error || 'Movie not found');
@@ -634,6 +680,11 @@ export default function Watch() {
   );
 
   const { movie, access, play_url, stream_type, related } = data;
+  const seasons = [...new Set((data.episodes || []).map(ep => Number(ep.season_number) || 1))].sort((a, b) => a - b);
+  const currentSeason = season ?? seasons[0];
+  const seasonEpisodes = (data.episodes || [])
+    .filter(ep => (Number(ep.season_number) || 1) === currentSeason)
+    .sort((a, b) => (Number(a.episode_number) || 0) - (Number(b.episode_number) || 0));
   const ytId = stream_type === 'youtube' ? getYouTubeId(play_url) : '';
 
   return (
@@ -712,6 +763,7 @@ export default function Watch() {
           title={movie.title}
           onBack={() => setPlaying(false)}
           movieId={movie.id}
+          episodeId={episodeId}
         />
       )}
 
@@ -727,6 +779,18 @@ export default function Watch() {
 
         <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1.2rem' }}>
           
+          <button onClick={async () => {
+            setLikes(l => ({ liked: !l.liked, count: l.count + (l.liked ? -1 : 1) }));
+            const r = await social.toggleLike('movie', movie.id).catch(() => null);
+            if (r?.ok) setLikes({ count: r.count, liked: r.liked });
+          }} aria-label="Like" style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '.42rem .9rem',
+            background: likes.liked ? 'rgba(229,9,20,.12)' : 'rgba(255,255,255,.06)',
+            border: `1px solid ${likes.liked ? 'rgba(229,9,20,.35)' : 'rgba(255,255,255,.1)'}`,
+            borderRadius: 8, color: likes.liked ? '#e50914' : 'rgba(255,255,255,.8)',
+            fontSize: '.78rem', fontWeight: 600, cursor: 'pointer'
+          }}>{likes.liked ? '♥' : '♡'} {likes.count > 0 ? likes.count : 'Like'}</button>
           <button onClick={async () => {
             const action = inWatchlist ? 'watchlist_remove' : 'watchlist_add';
             await client.post(`/movies.php?action=${action}`, { movie_id: movie.id });
@@ -758,14 +822,28 @@ export default function Watch() {
 
       {data?.episodes?.length > 0 && (
         <div style={{ maxWidth: 960, padding: '1rem 20px 0' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '.75rem' }}>Episodes</div>
-          {data.episodes.map(ep => (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: '.75rem', flexWrap: 'wrap' }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800 }}>Episodes</div>
+            {seasons.length > 1 && (
+              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', scrollbarWidth: 'none' }}>
+                {seasons.map(sn => (
+                  <button key={sn} onClick={() => setSeason(sn)} style={{
+                    padding: '.35rem .8rem', borderRadius: 16, cursor: 'pointer', whiteSpace: 'nowrap',
+                    fontSize: '.75rem', fontWeight: 700,
+                    background: sn === currentSeason ? '#e50914' : 'rgba(255,255,255,.06)',
+                    color: '#fff', border: `1px solid ${sn === currentSeason ? '#e50914' : 'rgba(255,255,255,.1)'}`
+                  }}>Season {sn}</button>
+                ))}
+              </div>
+            )}
+          </div>
+          {seasonEpisodes.map(ep => (
             <div key={ep.id}
               onClick={() => {
-                const url = ep.stream_720p || ep.stream_480p || ep.stream_360p;
-                if (url) { setEpisodeUrl(url); setPlaying(true); }
+                const url = ep.stream_720p || ep.stream_480p || ep.stream_360p || ep.stream_1080p;
+                if (url) { setEpisodeUrl(url); setEpisodeId(ep.id); setPlaying(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }
               }}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, marginBottom: 6, cursor: 'pointer', background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.06)' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, marginBottom: 6, cursor: 'pointer', background: ep.id === episodeId ? 'rgba(229,9,20,.08)' : 'rgba(255,255,255,.03)', border: `1px solid ${ep.id === episodeId ? 'rgba(229,9,20,.3)' : 'rgba(255,255,255,.06)'}` }}>
               {ep.thumbnail
                 ? <img src={ep.thumbnail} style={{ width: 80, height: 46, objectFit: 'cover', borderRadius: 6, flexShrink: 0 }} alt="" />
                 : <div style={{ width: 80, height: 46, background: '#1a1a1a', borderRadius: 6, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.3)', fontSize: '.7rem', fontWeight: 700 }}>EP {ep.episode_number}</div>
@@ -779,6 +857,13 @@ export default function Watch() {
           ))}
         </div>
       )}
+
+      <div style={{ maxWidth: 960, padding: '1.5rem 20px 0' }}>
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 800, marginBottom: '.75rem' }}>
+          Comments{commentCount ? ` (${commentCount})` : ''}
+        </div>
+        <CommentList type="movie" id={movie.id} onCount={setCommentCount} />
+      </div>
 
       {related?.length > 0 && (
         <div style={{ marginTop: '1rem', paddingBottom: '2rem' }}>

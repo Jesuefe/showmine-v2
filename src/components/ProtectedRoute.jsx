@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isOnboarded } from '../pages/Onboarding';
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -20,5 +21,6 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  return user ? children : <Navigate to="/login" replace />;
+  if (user) return children;
+  return <Navigate to={isOnboarded() ? '/login' : '/onboarding'} replace />;
 }

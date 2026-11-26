@@ -62,6 +62,7 @@ export default function Profile() {
           { label: t('kids_mode'), path: '/kids-setup' },
           { label: t('data_usage'), path: '/data-usage' },
           { label: t('active_devices'), path: '/sessions' },
+          { label: t('settings'), path: '/settings' },
         ].map((item, i, arr) => (
           <button key={item.label} onClick={() => navigate(item.path)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',

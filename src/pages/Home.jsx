@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslatedTitles, useTranslatedMovie } from '../i18n/useTranslatedContent';
 import client from '../api/client';
+import { progress as progressApi } from '../api/extras';
+import { useI18n } from '../i18n/I18nContext';
 
 function useIsMobile() {
   const checkMobile = () => {
@@ -51,6 +53,39 @@ function MovieCard({ movie, displayTitle }) {
         <div style={{ fontSize: '.6rem', color: 'rgba(255,255,255,.22)', marginTop: 2 }}>
           {movie.release_year}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function ContinueRow() {
+  const navigate = useNavigate();
+  const { t } = useI18n();
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    progressApi.continueList().then(r => { if (r.ok) setItems(r.items); }).catch(() => {});
+  }, []);
+  if (!items.length) return null;
+  return (
+    <div style={{ marginBottom: '2.2rem' }}>
+      <div style={{ padding: '0 20px .65rem', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>
+        {t('continue_watching')}
+      </div>
+      <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '2px 20px 8px', scrollbarWidth: 'none' }}>
+        {items.map(m => (
+          <div key={m.id} onClick={() => navigate(`/watch/${m.slug}`)} style={{ flexShrink: 0, width: 200, cursor: 'pointer' }}>
+            <div style={{ position: 'relative', aspectRatio: '16/9', background: '#161616', borderRadius: 10, overflow: 'hidden' }}>
+              {(m.banner_image || m.cover_image) && <img src={m.banner_image || m.cover_image} alt={m.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.25)' }}>
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="rgba(255,255,255,.9)"><polygon points="7 4 20 12 7 20 7 4"/></svg>
+              </div>
+              <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: 'rgba(255,255,255,.2)' }}>
+                <div style={{ width: `${Math.min(100, m.percent)}%`, height: '100%', background: '#e50914' }} />
+              </div>
+            </div>
+            <div style={{ fontSize: '.72rem', fontWeight: 700, color: 'rgba(255,255,255,.8)', marginTop: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.title}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -352,6 +387,7 @@ export default function Home() {
 
       <div style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,.07), transparent)', margin: '28px 0 24px' }} />
 
+      <ContinueRow />
       <MovieRow label="What's Hot"  title="Trending Now"  movies={data?.trending} seeAllPath="/browse" />
       <MovieRow label="No Cost"     title="Free to Watch" movies={data?.free}     seeAllPath="/browse" />
       <MovieRow label="Just Added"  title="New Arrivals"  movies={data?.new}      seeAllPath="/browse" />

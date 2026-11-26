@@ -38,6 +38,11 @@ android {
         }
     }
     buildTypes {
+        // Test builds install next to the Play Store app instead of replacing it.
+        debug {
+            applicationIdSuffix ".test"
+            versionNameSuffix "-test"
+        }
         release {
             if (releaseStoreFile) {
                 signingConfig signingConfigs.release

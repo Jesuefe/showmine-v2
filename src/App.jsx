@@ -28,6 +28,10 @@ import TVLogin from './pages/TVLogin';
 import ScanLogin from './pages/ScanLogin';
 import SubscribeVerify from './pages/SubscribeVerify';
 import Privacy from './pages/Privacy';
+import ForgotPassword from './pages/ForgotPassword';
+import Settings from './pages/Settings';
+import DeleteAccount from './pages/DeleteAccount';
+import Shorts from './pages/Shorts';
 
 function PL({ children }) {
   return (
@@ -80,6 +84,10 @@ export default function App() {
               <Route path="/login"            element={<Login />} />
               <Route path="/register"         element={<Register />} />
               <Route path="/onboarding"       element={<Onboarding />} />
+              <Route path="/forgot-password"  element={<ForgotPassword />} />
+              <Route path="/delete-account"   element={<DeleteAccount />} />
+              <Route path="/settings"         element={<PL><Settings /></PL>} />
+              <Route path="/shorts"           element={<PL><Shorts /></PL>} />
               <Route path="/"                 element={<PL><Home /></PL>} />
               <Route path="/browse"           element={<PL><Browse /></PL>} />
               <Route path="/watch/:slug"      element={<PL><Watch /></PL>} />
