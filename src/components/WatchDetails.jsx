@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
 import { useNavigate } from 'react-router-dom';
+import { DownloadAction } from './DownloadButton';
 
 const COND = "'Barlow Condensed', sans-serif";
 
@@ -145,7 +146,7 @@ function ActionBtn({ icon, label, active, color = '#fff', onClick, pop }) {
   );
 }
 
-export function WatchActions({ liked, likeCount, inList, commentCount, onLike, onList, onComments, onShare }) {
+export function WatchActions({ liked, likeCount, inList, commentCount, onLike, onList, onComments, onShare, download }) {
   const [pop, setPop] = useState(0);
   const fmt = (n) => (n > 0 ? Intl.NumberFormat('en', { notation: 'compact' }).format(n) : '');
   return (
@@ -159,6 +160,7 @@ export function WatchActions({ liked, likeCount, inList, commentCount, onLike, o
         icon={<svg width="20" height="20" viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>} />
       <ActionBtn label={fmt(commentCount) ? `${fmt(commentCount)} Comments` : 'Comment'} onClick={onComments}
         icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>} />
+      {download && <DownloadAction {...download} ActionBtn={ActionBtn} />}
       <ActionBtn label="Share" onClick={onShare}
         icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>} />
       <style>{`@keyframes wdPop{0%{transform:scale(1)}35%{transform:scale(1.35)}100%{transform:scale(1)}}.wd-pop{animation:wdPop .4s ease}.wd-press{transition:transform .12s}.wd-press:active{transform:scale(.94)}`}</style>

@@ -6,10 +6,12 @@ import { useI18n } from '../i18n/I18nContext';
 import { useKids } from '../context/KidsContext';
 import client from '../api/client';
 import { progress as progressApi } from '../api/extras';
+import { downloadsSupported } from '../utils/downloads';
 
 const H = { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800 };
 
 const ICONS = {
+  download: <><path d="M12 4v11"/><polyline points="7 10 12 15 17 10"/><path d="M5 20h14"/></>,
   list: <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>,
   clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
   kids: <><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>,
@@ -166,6 +168,7 @@ export default function Profile() {
         </div>
 
         <Section title="Watching">
+          {downloadsSupported() && <Row icon="download" label="My Downloads" hint="Watch without internet" tint="#4ade80" onClick={() => navigate('/downloads')} />}
           <Row icon="list" label={t('my_watchlist')} onClick={() => navigate('/watchlist')} />
           <Row icon="clock" label={t('coming_soon')} onClick={() => navigate('/coming-soon')} />
           <Row icon="live" label={t('live_tv')} onClick={() => navigate('/live')} />

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { showInterstitial, isAdMobAvailable } from '../services/admob';
 import { useParams, useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
@@ -8,6 +8,7 @@ import { WatchHero, WatchActions, WatchInfo, CommentsPreview, TrailerModal } fro
 import { shareMovie } from '../services/share';
 import client from '../api/client';
 import { useKids } from '../context/KidsContext';
+import { EpisodeDownload } from '../components/DownloadButton';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
 
@@ -761,6 +762,7 @@ export default function Watch() {
             }}
             onComments={() => setCommentsOpen(true)}
             onShare={() => shareMovie(movie)}
+            download={movie.content_type === 'movie' ? { type: 'movie', id: movie.id, title: movie.title, durationMins: movie.duration_mins } : null}
           />
         )}
         <WatchInfo movie={movie} />
@@ -798,6 +800,7 @@ export default function Watch() {
                 <div style={{ fontSize: '.82rem', fontWeight: 700, color: 'rgba(255,255,255,.85)', marginBottom: 3 }}>E{ep.episode_number}: {ep.title}</div>
                 <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)' }}>{ep.duration_mins ? `${ep.duration_mins} min` : ''} {ep.air_date ? ` ${ep.air_date}` : ''}</div>
               </div>
+              {!kidsMode && <EpisodeDownload id={ep.id} title={`${movie.title} · S${ep.season_number || 1} E${ep.episode_number}`} durationMins={ep.duration_mins} />}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ color: 'rgba(255,255,255,.3)', flexShrink: 0 }}><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </div>
           ))}

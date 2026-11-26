@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import LanguageSelector from './LanguageSelector';
 import { useI18n } from '../i18n/I18nContext';
 import { useKids } from '../context/KidsContext';
+import { downloadsSupported } from '../utils/downloads';
 
 function useIsMobile() {
   // Check if it's a mobile/tablet device using user agent
@@ -203,6 +204,11 @@ function MobileTopNav() {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8l4 10h12l4-10-6 4-4-7-4 7z"/></svg>
             Go Premium
           </Link>
+        )}
+        {downloadsSupported() && (
+          <button aria-label="My Downloads" onClick={() => navigate('/downloads')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.7)', cursor: 'pointer', display: 'flex' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4v11"/><polyline points="7 10 12 15 17 10"/><path d="M5 20h14"/></svg>
+          </button>
         )}
         <button onClick={() => navigate('/search')} style={{
           background: 'none', border: 'none',

@@ -20,6 +20,8 @@ import Search from './pages/Search';
 import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
 import Watchlist from './pages/Watchlist';
+import Downloads from './pages/Downloads';
+import OfflineGate from './components/OfflineGate';
 import ComingSoon from './pages/ComingSoon';
 import Onboarding from './pages/Onboarding';
 import NotFound from './pages/NotFound';
@@ -82,6 +84,7 @@ export default function App() {
       <AdMobInitializer />
       <BrowserRouter>
         <DeepLinkHandler />
+        <OfflineGate />
         <I18nProvider>
           <AuthProvider>
            <KidsProvider>
@@ -106,6 +109,7 @@ export default function App() {
               <Route path="/profile"          element={<PL><Profile /></PL>} />
               <Route path="/subscribe"        element={<PL><Subscribe /></PL>} />
               <Route path="/watchlist"        element={<PL><Watchlist /></PL>} />
+              <Route path="/downloads"        element={<PL><Downloads /></PL>} />
               <Route path="/coming-soon"      element={<PL><ComingSoon /></PL>} />
               <Route path="/subscribe/verify" element={<SubscribeVerify />} />
               <Route path="/tv-login"         element={<TVLogin />} />
