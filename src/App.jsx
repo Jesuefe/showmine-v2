@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { initAdMob } from './services/admob';
 import { initPushNotifications } from './services/notifications';
@@ -30,6 +30,7 @@ import Sessions from './pages/Sessions';
 import KidsSetup from './pages/KidsSetup';
 import TVLogin from './pages/TVLogin';
 import ScanLogin from './pages/ScanLogin';
+import Continue from './pages/Continue';
 import SubscribeVerify from './pages/SubscribeVerify';
 import Privacy from './pages/Privacy';
 import ForgotPassword from './pages/ForgotPassword';
@@ -109,6 +110,7 @@ export default function App() {
               <Route path="/subscribe/verify" element={<SubscribeVerify />} />
               <Route path="/tv-login"         element={<TVLogin />} />
               <Route path="/scan-login"       element={<ScanLogin />} />
+              <Route path="/continue"         element={<Continue />} />
               <Route path="/sessions"         element={<PL><Sessions /></PL>} />
               <Route path="/data-usage"       element={<PL><DataUsage /></PL>} />
               <Route path="/kids"             element={<PL><Kids /></PL>} />

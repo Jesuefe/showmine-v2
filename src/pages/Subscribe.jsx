@@ -10,17 +10,42 @@ export default function Subscribe() {
   const { user } = useAuth();
 
   const isNative = !!(window.Capacitor?.isNativePlatform?.() || window.Android);
-  if (isNative) return (
+  if (isNative) return <NativeSubscribe navigate={navigate} />;
+  return <WebSubscribe user={user} t={t} navigate={navigate} />;
+}
+
+// Inside the app: get a one-time code from the server and open the browser
+// already signed in on the plans page. Falls back to the plain page.
+function NativeSubscribe({ navigate }) {
+  const [opening, setOpening] = useState(false);
+  const openWeb = async () => {
+    if (opening) return;
+    setOpening(true);
+    let url = 'https://v2.showmine.ng/subscribe';
+    try {
+      const res = await client.post('/web_handoff.php?action=create', { next: '/subscribe' });
+      if (res.data?.ok && res.data.code) {
+        url = `https://v2.showmine.ng/continue?code=${encodeURIComponent(res.data.code)}&next=%2Fsubscribe`;
+      }
+    } catch { /* fall back to plain page */ }
+    // External address: the app hands it to the phone's browser
+    window.location.href = url;
+    setTimeout(() => setOpening(false), 3000);
+  };
+  return (
     <div style={{ background: '#000', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '2rem', textAlign: 'center' }}>
       <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(229,9,20,.1)', border: '2px solid rgba(229,9,20,.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
         <svg width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='#e50914' strokeWidth='2'><path d='M12 2L2 7l10 5 10-5-10-5z'/><path d='M2 17l10 5 10-5'/><path d='M2 12l10 5 10-5'/></svg>
       </div>
       <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.8rem', fontWeight: 900, marginBottom: '.75rem' }}>Get Showmine Premium</h2>
-      <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.9rem', lineHeight: 1.6, marginBottom: '2rem', maxWidth: 320 }}>Choose a plan on our website. Sign in with this same account, pay, then come back here and everything unlocks.</p>
-      <a href='https://v2.showmine.ng/subscribe' target='_blank' rel='noopener noreferrer' style={{ background: '#e50914', color: '#fff', borderRadius: 10, padding: '14px 28px', fontSize: '1rem', fontWeight: 800, textDecoration: 'none', marginBottom: '1rem', display: 'block' }}>Subscribe on v2.showmine.ng</a>
+      <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.9rem', lineHeight: 1.6, marginBottom: '2rem', maxWidth: 320 }}>We'll open the plans page in your browser, already signed in. Pay there, come back to the app, and everything unlocks.</p>
+      <button onClick={openWeb} disabled={opening} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 10, padding: '14px 28px', fontSize: '1rem', fontWeight: 800, marginBottom: '1rem', display: 'block', cursor: 'pointer', opacity: opening ? .7 : 1 }}>{opening ? 'Opening…' : 'Choose a plan'}</button>
       <button onClick={() => navigate(-1)} style={{ background: 'none', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.5)', borderRadius: 8, padding: '10px 20px', fontSize: '.85rem', cursor: 'pointer' }}>Go Back</button>
     </div>
   );
+}
+
+function WebSubscribe({ user, t, navigate }) {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState(null);
