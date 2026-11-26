@@ -36,7 +36,7 @@ function Steps({ step }) {
 export default function KidsSetup() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { active, hasPin, refresh, enable } = useKids();
+  const { active, hasPin, planOk, refresh, enable } = useKids();
   const [step, setStep] = useState('intro');
   const [firstPin, setFirstPin] = useState('');
   const [error, setError] = useState('');
@@ -134,7 +134,22 @@ export default function KidsSetup() {
               ))}
             </div>
 
-            {hasPin ? (
+            {planOk === false ? (
+              <div style={{
+                borderRadius: 18, padding: '20px 18px', textAlign: 'center',
+                background: 'linear-gradient(135deg,#2a1d03,#120d02)', border: '1px solid rgba(245,197,66,.35)',
+              }}>
+                <div style={{ fontSize: '2rem', marginBottom: 4 }}>🔒</div>
+                <div style={{ ...H, fontSize: '1.35rem', marginBottom: 6 }}>Kids Mode is a Standard plan feature</div>
+                <div style={{ fontSize: '.84rem', color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginBottom: 16 }}>
+                  You’re on the <b style={{ color: '#fff' }}>Free</b> plan. Upgrade to <b style={{ color: '#f5c542' }}>Standard</b> or a family/enterprise plan to give your children their own safe, PIN-locked space.
+                </div>
+                <button style={{ ...primaryBtn, background: 'linear-gradient(90deg,#f5c542,#e0a100)', color: '#1a1200', boxShadow: '0 8px 24px rgba(245,197,66,.3)' }} onClick={() => navigate('/subscribe')}>
+                  See plans & upgrade
+                </button>
+                <button style={{ ...ghostBtn, marginTop: 10 }} onClick={() => navigate(-1)}>Not now</button>
+              </div>
+            ) : hasPin ? (
               <>
                 <button style={{ ...primaryBtn, opacity: busy ? .6 : 1 }} disabled={busy} onClick={() => turnOn()}>
                   {busy ? 'Turning on…' : 'Turn on Kids Mode'}
@@ -145,7 +160,7 @@ export default function KidsSetup() {
             ) : (
               <button style={primaryBtn} onClick={() => { setError(''); setStep('pin'); }}>Set up a PIN</button>
             )}
-            <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', textAlign: 'center', marginTop: 12 }}>Kids Mode needs the Standard plan or above.</p>
+            {planOk === true && <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', textAlign: 'center', marginTop: 12 }}>Included with your plan ✓</p>}
           </>
         )}
 

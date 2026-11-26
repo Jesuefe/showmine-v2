@@ -65,7 +65,7 @@ function daysLeft(date) {
 export default function Profile() {
   const { t } = useI18n();
   const { user, logout } = useAuth();
-  const { active: kidsOn } = useKids();
+  const { active: kidsOn, planOk: kidsPlanOk } = useKids();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ list: null, progress: null });
   const [confirmOut, setConfirmOut] = useState(false);
@@ -168,9 +168,11 @@ export default function Profile() {
           <Row icon="list" label={t('my_watchlist')} onClick={() => navigate('/watchlist')} />
           <Row icon="clock" label={t('coming_soon')} onClick={() => navigate('/coming-soon')} />
           <Row icon="live" label={t('live_tv')} onClick={() => navigate('/live')} />
-          <Row icon="kids" label={t('kids_mode')} hint="Safe, PIN-locked space for children" tint="#f472b6" last
+          <Row icon="kids" label={t('kids_mode')} hint={kidsPlanOk === false ? 'Needs Standard plan — tap to see' : 'Safe, PIN-locked space for children'} tint="#f472b6" last
             onClick={() => navigate('/kids-setup')}
-            badge={<span style={{ fontSize: '.62rem', fontWeight: 900, padding: '3px 8px', borderRadius: 20, background: kidsOn ? 'rgba(34,197,94,.15)' : 'rgba(255,255,255,.07)', color: kidsOn ? '#4ade80' : 'rgba(255,255,255,.45)' }}>{kidsOn ? 'ON' : 'OFF'}</span>} />
+            badge={kidsPlanOk === false
+              ? <span style={{ fontSize: '.6rem', fontWeight: 900, padding: '3px 8px', borderRadius: 20, background: 'linear-gradient(90deg,#f5c542,#e0a100)', color: '#1a1200' }}>🔒 STANDARD</span>
+              : <span style={{ fontSize: '.62rem', fontWeight: 900, padding: '3px 8px', borderRadius: 20, background: kidsOn ? 'rgba(34,197,94,.15)' : 'rgba(255,255,255,.07)', color: kidsOn ? '#4ade80' : 'rgba(255,255,255,.45)' }}>{kidsOn ? 'ON' : 'OFF'}</span>} />
         </Section>
 
         <Section title="Devices">
@@ -181,6 +183,7 @@ export default function Profile() {
 
         <Section title="Account">
           <Row icon="gear" label={t('settings')} hint="Name, language, password" onClick={() => navigate('/settings')} />
+          <Row icon="help" label="Help & support" hint="Message our team · or shake your phone" tint="#f5c542" onClick={() => navigate('/support')} />
           <Row icon="doc" label={t('terms_of_service')} onClick={() => navigate('/terms')} />
           <Row icon="shield" label={t('privacy_policy')} last onClick={() => navigate('/privacy')} />
         </Section>

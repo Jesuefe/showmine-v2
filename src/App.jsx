@@ -2,8 +2,11 @@
 import { useEffect } from 'react';
 import { initAdMob } from './services/admob';
 import { initPushNotifications } from './services/notifications';
+import { registerDevice } from './services/device';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { KidsProvider, KidsGuard } from './context/KidsContext';
+import { SupportProvider } from './context/SupportContext';
+import { SupportList, SupportThread } from './pages/Support';
 import { I18nProvider } from './i18n/I18nContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
@@ -50,7 +53,7 @@ function AdMobInitializer() {
 function PushNotificationInitializer() {
   const { user } = useAuth();
   useEffect(() => {
-    if (user?.id) initPushNotifications(user.id);
+    if (user?.id) { initPushNotifications(user.id); registerDevice(); }
   }, [user?.id]);
   return null;
 }
@@ -81,6 +84,7 @@ export default function App() {
         <I18nProvider>
           <AuthProvider>
            <KidsProvider>
+           <SupportProvider>
             <PushNotificationInitializer />
             <KidsGuard />
             <Routes>
@@ -90,6 +94,8 @@ export default function App() {
               <Route path="/forgot-password"  element={<ForgotPassword />} />
               <Route path="/delete-account"   element={<DeleteAccount />} />
               <Route path="/settings"         element={<PL><Settings /></PL>} />
+              <Route path="/support"          element={<PL><SupportList /></PL>} />
+              <Route path="/support/:id"      element={<PL><SupportThread /></PL>} />
               <Route path="/shorts"           element={<PL><Shorts /></PL>} />
               <Route path="/"                 element={<PL><Home /></PL>} />
               <Route path="/browse"           element={<PL><Browse /></PL>} />
@@ -111,6 +117,7 @@ export default function App() {
               <Route path="/privacy"          element={<Privacy />} />
               <Route path="*"                 element={<NotFound />} />
             </Routes>
+           </SupportProvider>
            </KidsProvider>
           </AuthProvider>
         </I18nProvider>

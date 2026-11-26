@@ -18,6 +18,7 @@ export function KidsProvider({ children }) {
   const [active, setActive] = useState(readLocal);
   const [hasPin, setHasPin] = useState(false);
   const [hasPassword, setHasPassword] = useState(true);
+  const [planOk, setPlanOk] = useState(null); // null = unknown yet
 
   const apply = useCallback((on) => {
     setActive(on);
@@ -31,6 +32,7 @@ export function KidsProvider({ children }) {
         apply(!!r.data.is_kids_mode);
         setHasPin(!!r.data.has_pin);
         setHasPassword(r.data.has_password !== false);
+        setPlanOk(r.data.plan_ok !== false);
       }
       return r.data;
     } catch {
@@ -67,7 +69,7 @@ export function KidsProvider({ children }) {
   };
 
   return (
-    <KidsContext.Provider value={{ active, hasPin, hasPassword, refresh, enable, exit, requestResetCode, resetPin }}>
+    <KidsContext.Provider value={{ active, hasPin, hasPassword, planOk, refresh, enable, exit, requestResetCode, resetPin }}>
       {children}
     </KidsContext.Provider>
   );

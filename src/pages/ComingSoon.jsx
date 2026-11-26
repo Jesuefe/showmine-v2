@@ -1,155 +1,189 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
+import { TrailerModal, getYouTubeId } from '../components/WatchDetails';
+import { PageHeader } from '../components/ui';
 
-function getYouTubeId(url) {
-  if (!url) return '';
-  const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-  return m ? m[1] : '';
+const COND = "'Barlow Condensed', sans-serif";
+
+function parseDate(s) {
+  if (!s) return null;
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function useNow(enabled) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!enabled) return undefined;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [enabled]);
+  return now;
+}
+
+function Countdown({ date }) {
+  const now = useNow(true);
+  const diff = date.getTime() - now;
+  if (diff <= 0) return <div style={{ fontFamily: COND, fontWeight: 900, color: '#4ade80', letterSpacing: '.1em' }}>OUT NOW</div>;
+  const parts = [
+    [Math.floor(diff / 86400000), 'Days'],
+    [Math.floor(diff / 3600000) % 24, 'Hrs'],
+    [Math.floor(diff / 60000) % 60, 'Min'],
+    [Math.floor(diff / 1000) % 60, 'Sec'],
+  ];
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      {parts.map(([v, l]) => (
+        <div key={l} style={{ minWidth: 52, textAlign: 'center', padding: '8px 6px', borderRadius: 10, background: 'rgba(0,0,0,.45)', border: '1px solid rgba(255,255,255,.15)', backdropFilter: 'blur(8px)' }}>
+          <div style={{ fontFamily: COND, fontSize: '1.5rem', fontWeight: 900, lineHeight: 1 }}>{String(v).padStart(2, '0')}</div>
+          <div style={{ fontSize: '.56rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.55)', marginTop: 3 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RemindButton({ notified, busy, onClick, big }) {
+  return (
+    <button onClick={onClick} className="cs-press" style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, cursor: notified ? 'default' : 'pointer',
+      padding: big ? '13px 18px' : '9px 14px', borderRadius: 10, flex: big ? 1 : undefined,
+      background: notified ? 'rgba(34,197,94,.14)' : '#fff', color: notified ? '#4ade80' : '#000',
+      border: notified ? '1px solid rgba(34,197,94,.4)' : 'none', fontFamily: COND, fontWeight: 900, fontSize: big ? '1rem' : '.85rem', letterSpacing: '.05em', textTransform: 'uppercase',
+    }}>
+      {notified
+        ? <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg> Reminder set</>
+        : <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> {busy ? 'Saving…' : 'Remind me'}</>}
+    </button>
+  );
 }
 
 export default function ComingSoon() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [notified, setNotified] = useState({});
-  const [notifying, setNotifying] = useState({});
+  const [counts, setCounts] = useState({});
+  const [busy, setBusy] = useState({});
   const [trailer, setTrailer] = useState(null);
 
   useEffect(() => {
     client.get('/movies.php?action=coming_soon')
       .then(res => {
-        if (res.data.ok) {
-          setMovies(res.data.movies);
-          // Pre-fill notified state from API
-          const notifiedMap = {};
-          res.data.movies.forEach(m => { if (m.user_notified) notifiedMap[m.id] = true; });
-          setNotified(notifiedMap);
-        }
+        if (!res.data.ok) return;
+        const list = res.data.movies || [];
+        setMovies(list);
+        setNotified(Object.fromEntries(list.filter(m => m.user_notified).map(m => [m.id, true])));
+        setCounts(Object.fromEntries(list.map(m => [m.id, m.notify_count || 0])));
       })
-      .catch(console.error)
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
+  const remind = async (m) => {
+    if (notified[m.id] || busy[m.id]) return;
+    setBusy(b => ({ ...b, [m.id]: true }));
+    try {
+      const res = await client.post('/movies.php?action=notify_me', { upcoming_id: m.id });
+      if (res.data.ok) {
+        setNotified(n => ({ ...n, [m.id]: true }));
+        setCounts(c => ({ ...c, [m.id]: (c[m.id] || 0) + 1 }));
+        navigator.vibrate?.(15);
+      }
+    } catch { /* ignore */ }
+    setBusy(b => ({ ...b, [m.id]: false }));
+  };
+
+  const [hero, ...rest] = movies;
+  const heroDate = hero && parseDate(hero.release_date);
+
   return (
-    <div style={{ background: '#000', minHeight: '100vh', padding: '24px 20px 60px' }}>
-
-      {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#e50914', animation: 'pulse 1.2s ease infinite' }} />
-          <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.65rem', fontWeight: 800, letterSpacing: '.2em', textTransform: 'uppercase', color: '#e50914' }}>Coming Soon</span>
+    <div style={{ background: '#000', minHeight: '100vh', paddingBottom: 50 }}>
+      {loading ? (
+        <div style={{ padding: 16 }}>
+          <div className="cs-skel" style={{ height: 420, borderRadius: 18, marginBottom: 16 }} />
+          <div className="cs-skel" style={{ height: 120, borderRadius: 14 }} />
         </div>
-        <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 900 }}>Upcoming Titles</h1>
-      </div>
-
-      {/* Trailer modal */}
-      {trailer && (
-        <div onClick={() => setTrailer(null)} style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,.92)',
-          zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 800, position: 'relative' }}>
-            <button onClick={() => setTrailer(null)} style={{
-              position: 'absolute', top: -40, right: 0, background: 'none', border: 'none',
-              color: '#fff', fontSize: '1.5rem', cursor: 'pointer'
-            }}>✕</button>
-            <div style={{ aspectRatio: '16/9', background: '#000', borderRadius: 12, overflow: 'hidden' }}>
-              <iframe src={`https://www.youtube.com/embed/${getYouTubeId(trailer)}?autoplay=1`}
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media"
-                allowFullScreen />
+      ) : !hero ? (
+        <>
+          <PageHeader title="Coming soon" />
+          <div style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
+            <div style={{ fontSize: '3rem', marginBottom: 8 }}>🎬</div>
+            <div style={{ fontFamily: COND, fontSize: '1.4rem', fontWeight: 800 }}>New titles are on the way</div>
+            <div style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.5)', marginTop: 6 }}>Check back soon for the next big African premieres.</div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Featured premiere */}
+          <div style={{ position: 'relative', minHeight: 480, aspectRatio: '4/5', maxHeight: '80vh', overflow: 'hidden' }}>
+            {hero.image && <img src={hero.image} alt={hero.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }} />}
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top,#000 0%,rgba(0,0,0,.75) 35%,rgba(0,0,0,.1) 70%,rgba(0,0,0,.5) 100%)' }} />
+            <div style={{ position: 'absolute', top: 'calc(env(safe-area-inset-top) + 18px)', left: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="cs-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: '#e50914' }} />
+              <span style={{ fontFamily: COND, fontSize: '.72rem', fontWeight: 900, letterSpacing: '.22em', color: '#fff' }}>COMING SOON</span>
+            </div>
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '0 20px 22px' }}>
+              <div style={{ fontFamily: COND, fontSize: '.75rem', fontWeight: 800, letterSpacing: '.18em', color: '#e50914', marginBottom: 6 }}>
+                {hero.genre ? hero.genre.toUpperCase() + ' · ' : ''}{heroDate ? heroDate.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase() : (hero.release_date || 'DATE TBA').toUpperCase()}
+              </div>
+              <h1 style={{ fontFamily: COND, fontSize: 'clamp(2.2rem,9vw,3.6rem)', fontWeight: 900, lineHeight: .92, margin: '0 0 10px' }}>{hero.title}</h1>
+              {hero.description && <p style={{ fontSize: '.86rem', color: 'rgba(255,255,255,.7)', lineHeight: 1.6, margin: '0 0 14px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{hero.description}</p>}
+              {heroDate && <div style={{ marginBottom: 16 }}><Countdown date={heroDate} /></div>}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <RemindButton notified={notified[hero.id]} busy={busy[hero.id]} onClick={() => remind(hero)} big />
+                {getYouTubeId(hero.trailer_url) && (
+                  <button onClick={() => setTrailer(hero)} className="cs-press" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '13px 16px', borderRadius: 10, background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.25)', color: '#fff', fontFamily: COND, fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>▶ Trailer</button>
+                )}
+              </div>
+              {counts[hero.id] > 0 && <div style={{ fontSize: '.74rem', color: 'rgba(255,255,255,.5)', marginTop: 10 }}>🔔 {counts[hero.id].toLocaleString()} {counts[hero.id] === 1 ? 'person is' : 'people are'} waiting</div>}
             </div>
           </div>
-        </div>
-      )}
 
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem 0' }}>
-          <div style={{ width: 36, height: 36, border: '3px solid #1a1a1a', borderTop: '3px solid #e50914', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
-        </div>
-      ) : movies.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.1)" strokeWidth="1.5" style={{ margin: '0 auto 1rem' }}>
-            <rect x="2" y="2" width="20" height="20" rx="2"/><path d="M10 8l6 4-6 4V8z"/>
-          </svg>
-          <p style={{ color: 'rgba(255,255,255,.3)', fontSize: '.9rem' }}>No upcoming titles announced yet</p>
-          <p style={{ color: 'rgba(255,255,255,.2)', fontSize: '.78rem', marginTop: '.5rem' }}>Check back soon</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 700 }}>
-          {movies.map(m => (
-            <div key={m.id} style={{
-              background: '#111', border: '1px solid rgba(255,255,255,.07)',
-              borderRadius: 16, overflow: 'hidden',
-              display: 'flex', gap: 0
-            }}>
-              {/* Poster */}
-              <div style={{ width: 110, flexShrink: 0, aspectRatio: '2/3', background: '#1a1a1a', position: 'relative', overflow: 'hidden' }}>
-                {m.image
-                  ? <img src={m.image} alt={m.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a1a, #2a2a2a)' }} />}
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent 70%, #111 100%)' }} />
-              </div>
-
-              {/* Info */}
-              <div style={{ flex: 1, padding: '16px 16px 16px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ display: 'inline-block', background: 'rgba(229,9,20,.1)', border: '1px solid rgba(229,9,20,.2)', color: '#e50914', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.58rem', fontWeight: 900, letterSpacing: '.1em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 4, marginBottom: 8 }}>
-                    Coming {m.release_date || 'Soon'}
+          {/* Timeline */}
+          {rest.length > 0 && (
+            <div style={{ padding: '24px 16px 0' }}>
+              <div style={{ fontFamily: COND, fontSize: '1.15rem', fontWeight: 800, marginBottom: 14, paddingLeft: 4 }}>Also on the way</div>
+              {rest.map(m => {
+                const d = parseDate(m.release_date);
+                return (
+                  <div key={m.id} style={{ display: 'flex', gap: 14, marginBottom: 22 }}>
+                    <div style={{ width: 46, flexShrink: 0, textAlign: 'center', paddingTop: 4 }}>
+                      <div style={{ fontFamily: COND, fontSize: '.7rem', fontWeight: 800, color: '#e50914', letterSpacing: '.1em' }}>{d ? d.toLocaleDateString(undefined, { month: 'short' }).toUpperCase() : 'TBA'}</div>
+                      <div style={{ fontFamily: COND, fontSize: '1.7rem', fontWeight: 900, lineHeight: 1 }}>{d ? d.getDate() : '—'}</div>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ position: 'relative', aspectRatio: '16/9', borderRadius: 14, overflow: 'hidden', background: '#141414', marginBottom: 10 }}>
+                        {m.image && <img src={m.image} alt={m.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                        {getYouTubeId(m.trailer_url) && (
+                          <button onClick={() => setTrailer(m)} aria-label="Play trailer" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,.2)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(0,0,0,.55)', border: '2px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><polygon points="7 4 20 12 7 20 7 4"/></svg>
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ fontFamily: COND, fontSize: '1.25rem', fontWeight: 800, lineHeight: 1.05 }}>{m.title}</div>
+                      {m.genre && <div style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.45)', margin: '3px 0 6px' }}>{m.genre}</div>}
+                      {m.description && <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.6)', lineHeight: 1.55, margin: '0 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{m.description}</p>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <RemindButton notified={notified[m.id]} busy={busy[m.id]} onClick={() => remind(m)} />
+                        {counts[m.id] > 0 && <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)' }}>🔔 {counts[m.id]} waiting</span>}
+                      </div>
+                    </div>
                   </div>
-                  <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.15rem', fontWeight: 900, marginBottom: 6, lineHeight: 1.1 }}>{m.title}</h2>
-                  {m.genre && <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.3)', marginBottom: 8 }}>{m.genre}</div>}
-                  {m.description && (
-                    <p style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.6, marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {m.description}
-                    </p>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {m.trailer_url && (
-                    <button onClick={() => setTrailer(m.trailer_url)} style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.12)',
-                      color: '#fff', borderRadius: 8, padding: '6px 14px',
-                      fontSize: '.75rem', fontWeight: 700, cursor: 'pointer'
-                    }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                      Watch Trailer
-                    </button>
-                  )}
-                  <button onClick={async () => {
-                      if (notified[m.id] || notifying[m.id]) return;
-                      setNotifying(n => ({ ...n, [m.id]: true }));
-                      try {
-                        const res = await client.post('/movies.php?action=notify_me', { upcoming_id: m.id });
-                        if (res.data.ok) setNotified(n => ({ ...n, [m.id]: true }));
-                      } catch {}
-                      setNotifying(n => ({ ...n, [m.id]: false }));
-                    }} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
-                    background: notified[m.id] ? 'rgba(34,197,94,.1)' : 'rgba(229,9,20,.1)',
-                    border: `1px solid ${notified[m.id] ? 'rgba(34,197,94,.25)' : 'rgba(229,9,20,.25)'}`,
-                    color: notified[m.id] ? '#22c55e' : '#e50914',
-                    borderRadius: 8, padding: '6px 14px',
-                    fontSize: '.75rem', fontWeight: 700, cursor: 'pointer'
-                  }}>
-                    {notified[m.id] ? 'Notified' : notifying[m.id] ? 'Saving...' : 'Notify Me'}
-                  </button>
-                  {m.notify_count > 0 && (
-                    <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.25)', alignSelf: 'center' }}>
-                      {m.notify_count} waiting
-                    </span>
-                  )}
-                </div>
-              </div>
+                );
+              })}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
+      {trailer && <TrailerModal url={trailer.trailer_url} title={trailer.title} onClose={() => setTrailer(null)} />}
       <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+        .cs-press{transition:transform .12s}.cs-press:active{transform:scale(.96)}
+        @keyframes csPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}.cs-pulse{animation:csPulse 1.4s infinite}
+        @keyframes csSh{0%{background-position:-400px 0}100%{background-position:400px 0}}
+        .cs-skel{background:linear-gradient(90deg,#111,#1c1c1c,#111);background-size:800px 100%;animation:csSh 1.2s linear infinite}
       `}</style>
     </div>
   );

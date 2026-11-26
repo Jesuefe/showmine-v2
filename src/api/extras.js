@@ -58,3 +58,18 @@ export const CATEGORIES = [
   { slug: 'animation', label: 'Animation' },
   { slug: 'podcast', label: 'Podcasts' },
 ];
+
+export const devices = {
+  register: (info) => post('/devices.php?action=register', info),
+  list: () => get('/devices.php?action=list'),
+  revoke: (id) => post('/devices.php?action=revoke', { id }),
+  revokeOthers: () => post('/devices.php?action=revoke_others', {}),
+};
+
+export const support = {
+  create: (data) => post('/support.php?action=create', data),
+  list: () => get('/support.php?action=list'),
+  get: (id) => get(`/support.php?action=get&id=${id}`),
+  reply: (id, message) => post('/support.php?action=reply', { id, message }),
+  close: (id) => post('/support.php?action=close', { id }),
+};
