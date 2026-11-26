@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
 import LanguageSelector from '../components/LanguageSelector';
@@ -8,6 +8,10 @@ export default function Register() {
   const { t } = useI18n();
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const nextRaw = params.get('next') || '/';
+  const next = nextRaw.startsWith('/') && !nextRaw.startsWith('//') ? nextRaw : '/';
+  const nextQ = next !== '/' ? `?next=${encodeURIComponent(next)}` : '';
   const [form, setForm] = useState({ full_name: '', email: '', username: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,8 +35,8 @@ export default function Register() {
       if (data.ok) {
         // Auto login
         const loginRes = await login(form.email, form.password);
-        if (loginRes.ok) navigate('/');
-        else navigate('/login');
+        if (loginRes.ok) navigate(next, { replace: true });
+        else navigate('/login' + nextQ);
       } else {
         setError(data.error || 'Registration failed');
       }
@@ -97,7 +101,7 @@ export default function Register() {
 
           <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '.84rem', color: 'rgba(255,255,255,.4)' }}>
             {t('already_have_account')}{' '}
-            <Link to="/login" style={{ color: '#e50914', fontWeight: 700 }}>{t('sign_in')}</Link>
+            <Link to={'/login' + nextQ} style={{ color: '#e50914', fontWeight: 700 }}>{t('sign_in')}</Link>
           </p>
         </div>
 

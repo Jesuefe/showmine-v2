@@ -1,9 +1,10 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { isOnboarded } from '../pages/Onboarding';
 
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -22,5 +23,9 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (user) return children;
-  return <Navigate to={isOnboarded() ? '/login' : '/onboarding'} replace />;
+  const here = location.pathname + location.search;
+  const next = here && here !== '/' ? `?next=${encodeURIComponent(here)}` : '';
+  // Someone sent straight to a page (e.g. /subscribe from the app) skips the intro slides
+  const base = isOnboarded() || next ? '/login' : '/onboarding';
+  return <Navigate to={base + next} replace />;
 }

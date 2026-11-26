@@ -31,6 +31,28 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // Coming back to the app (e.g. after paying in the browser) refreshes the
+  // account so a new subscription unlocks without signing out and in again.
+  useEffect(() => {
+    let last = 0;
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (!token || Date.now() - last < 15000) return;
+      last = Date.now();
+      client.get('/auth.php?action=me', { headers: { 'X-Auth-Token': token } })
+        .then(res => {
+          if (res.data.ok) {
+            setUser(res.data.user);
+            localStorage.setItem(USER_KEY, JSON.stringify(res.data.user));
+          }
+        })
+        .catch(() => {});
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, []);
+
   const login = async (email, password) => {
     const res = await client.post('/auth.php?action=login', { email, password });
     if (res.data.ok) {

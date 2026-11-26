@@ -193,6 +193,17 @@ function MobileTopNav() {
         <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.2rem', fontWeight: 900, letterSpacing: '.1em', color: '#e50914' }}>SHOWMINE</span>
       </Link>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {user && (!user.sub || /free/i.test(user.sub?.plan || 'Free')) && (
+          <Link to="/subscribe" style={{
+            display: 'flex', alignItems: 'center', gap: 5, textDecoration: 'none',
+            background: '#e50914', color: '#fff', borderRadius: 20, padding: '6px 12px',
+            fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.78rem', fontWeight: 800,
+            letterSpacing: '.06em', textTransform: 'uppercase'
+          }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M2 8l4 10h12l4-10-6 4-4-7-4 7z"/></svg>
+            Go Premium
+          </Link>
+        )}
         <button onClick={() => navigate('/search')} style={{
           background: 'none', border: 'none',
           color: 'rgba(255,255,255,.7)', cursor: 'pointer', display: 'flex'

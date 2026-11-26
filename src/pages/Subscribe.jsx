@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
@@ -16,8 +16,8 @@ export default function Subscribe() {
         <svg width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='#e50914' strokeWidth='2'><path d='M12 2L2 7l10 5 10-5-10-5z'/><path d='M2 17l10 5 10-5'/><path d='M2 12l10 5 10-5'/></svg>
       </div>
       <h2 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.8rem', fontWeight: 900, marginBottom: '.75rem' }}>Get Showmine Premium</h2>
-      <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.9rem', lineHeight: 1.6, marginBottom: '2rem', maxWidth: 320 }}>Subscribe to Showmine Premium on our website to unlock all movies and exclusive content.</p>
-      <a href='https://v2.showmine.ng/subscribe' target='_blank' rel='noopener noreferrer' style={{ background: '#e50914', color: '#fff', borderRadius: 10, padding: '14px 28px', fontSize: '1rem', fontWeight: 800, textDecoration: 'none', marginBottom: '1rem', display: 'block' }}>Visit showmine.ng</a>
+      <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.9rem', lineHeight: 1.6, marginBottom: '2rem', maxWidth: 320 }}>Choose a plan on our website. Sign in with this same account, pay, then come back here and everything unlocks.</p>
+      <a href='https://v2.showmine.ng/subscribe' target='_blank' rel='noopener noreferrer' style={{ background: '#e50914', color: '#fff', borderRadius: 10, padding: '14px 28px', fontSize: '1rem', fontWeight: 800, textDecoration: 'none', marginBottom: '1rem', display: 'block' }}>Subscribe on v2.showmine.ng</a>
       <button onClick={() => navigate(-1)} style={{ background: 'none', border: '1px solid rgba(255,255,255,.1)', color: 'rgba(255,255,255,.5)', borderRadius: 8, padding: '10px 20px', fontSize: '.85rem', cursor: 'pointer' }}>Go Back</button>
     </div>
   );

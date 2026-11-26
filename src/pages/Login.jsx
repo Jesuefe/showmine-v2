@@ -276,7 +276,7 @@ export default function Login() {
 
             <p style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '.84rem', color: 'rgba(255,255,255,.4)' }}>
               {t('dont_have_account')}{' '}
-              <Link to="/register" style={{ color: '#e50914', fontWeight: 700 }}>Sign Up</Link>
+              <Link to={next !== '/' ? `/register?next=${encodeURIComponent(next)}` : '/register'} style={{ color: '#e50914', fontWeight: 700 }}>Sign Up</Link>
             </p>
           </div>
 
