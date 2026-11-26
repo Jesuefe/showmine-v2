@@ -612,7 +612,7 @@ export default function Watch() {
   const isNativeApp = !!(window.Capacitor?.isNativePlatform?.() || window.Android);
   if (!isNativeApp) return (
     <div style={{ background: '#000', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', padding: '2rem', textAlign: 'center' }}>
-      <img src='https://showmine24.b-cdn.net/1024.png' style={{ width: 80, height: 80, borderRadius: 16, marginBottom: '1.5rem' }} alt='Showmine TV' />
+      <img src='https://v2.showmine.ng/brand/logo.jpg' style={{ width: 80, height: 80, borderRadius: 16, marginBottom: '1.5rem' }} alt='Showmine TV' />
       <h2 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '.5rem' }}>Watch on the App</h2>
       <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.9rem', marginBottom: '2rem', maxWidth: 300 }}>Download the Showmine TV app for the best streaming experience.</p>
       <a href='https://play.google.com/store/apps/details?id=com.showminetventertainment.showminetvapptv' target='_blank' rel='noopener noreferrer'
