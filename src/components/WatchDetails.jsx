@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Icon from './Icon';
 import { useNavigate } from 'react-router-dom';
 
 const COND = "'Barlow Condensed', sans-serif";
@@ -115,7 +116,7 @@ export function WatchHero({ movie, access, onPlay, onSubscribe, onTrailer }) {
             <button onClick={onSubscribe} className="wd-press" style={{
               flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#e50914', color: '#fff', border: 'none', borderRadius: 10,
               padding: '14px 18px', fontFamily: COND, fontSize: '1.05rem', fontWeight: 900, letterSpacing: '.04em', textTransform: 'uppercase', cursor: 'pointer', boxShadow: '0 8px 26px rgba(229,9,20,.45)',
-            }}>🔓 Subscribe to watch</button>
+            }}><Icon name="unlock" size={18} /> Subscribe to watch</button>
           )}
           {ytId && (
             <button onClick={onTrailer} className="wd-press" style={{

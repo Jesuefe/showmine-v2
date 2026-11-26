@@ -10,7 +10,7 @@ function QRCode({ url }) {
 
 export default function TVLogin() {
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { completeLogin } = useAuth();
   const [token, setToken] = useState('');
   const [status, setStatus] = useState('loading'); // loading, ready, approved, expired
   const [timeLeft, setTimeLeft] = useState(300);
@@ -39,8 +39,9 @@ export default function TVLogin() {
         if (res.data.status === 'approved') {
           clearInterval(pollRef.current);
           clearInterval(timerRef.current);
+          completeLogin(res.data.token, res.data.user);
           setStatus('approved');
-          setTimeout(() => navigate('/'), 2000);
+          setTimeout(() => navigate('/', { replace: true }), 1500);
         } else if (res.data.status === 'expired') {
           clearInterval(pollRef.current);
           clearInterval(timerRef.current);
@@ -106,7 +107,7 @@ export default function TVLogin() {
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, letterSpacing: '.3em', color: '#fff', marginBottom: '.5rem' }}>
                 {token.slice(0, 4).toUpperCase()}-{token.slice(4, 8).toUpperCase()}
               </div>
-              <p style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.25)' }}>Or visit showmine.ng/scan and enter code</p>
+              <p style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.25)' }}>Or open Showmine on your phone → Profile → Sign in on TV, and enter this code</p>
             </div>
 
             {/* Timer */}

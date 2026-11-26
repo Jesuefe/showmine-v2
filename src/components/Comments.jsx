@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from './Icon';
 import { social } from '../api/extras';
 import { RED, Spinner, timeAgo } from './ui';
 
@@ -71,7 +72,7 @@ export function CommentList({ type, id, onCount }) {
             <div style={{ fontSize: '.88rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{c.body}</div>
             <div style={{ display: 'flex', gap: 14, marginTop: 4, fontSize: '.72rem' }}>
               <button onClick={() => like(c)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: c.liked ? RED : 'rgba(255,255,255,.45)' }}>
-                {c.liked ? '♥' : '♡'} {c.likes || ''}
+                <Icon name="heart" size={14} style={{ display: 'inline-block', verticalAlign: '-2px', fill: c.liked ? 'currentColor' : 'none' }} /> {c.likes || ''}
               </button>
               {c.mine && <button onClick={() => remove(c)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(255,255,255,.45)' }}>Delete</button>}
             </div>

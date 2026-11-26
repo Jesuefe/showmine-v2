@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Icon, { IconBadge } from '../components/Icon';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
 
@@ -90,7 +91,7 @@ export default function Search() {
           <input ref={inputRef} type="search" value={q} onChange={e => onChange(e.target.value)} enterKeyHint="search"
             placeholder="Movies, Nollywood, actors, sports…"
             style={{ width: '100%', boxSizing: 'border-box', padding: '15px 44px 15px 48px', background: '#16161a', border: '1px solid rgba(255,255,255,.1)', borderRadius: 14, color: '#fff', fontSize: '1rem', outline: 'none', fontFamily: 'inherit' }} />
-          {q && <button onClick={() => onChange('')} aria-label="Clear" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', cursor: 'pointer' }}>✕</button>}
+          {q && <button onClick={() => onChange('')} aria-label="Clear" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>}
         </div>
         {!showDiscover && (
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -137,7 +138,7 @@ export default function Search() {
 
           {trending.length > 0 && (
             <>
-              <div style={{ fontFamily: COND, fontSize: '1.05rem', fontWeight: 800, marginBottom: 10 }}>🔥 Popular right now</div>
+              <div style={{ fontFamily: COND, fontSize: '1.05rem', fontWeight: 800, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}><Icon name="flame" size={18} color="#e50914" /> Popular right now</div>
               {trending.map((m, i) => (
                 <div key={m.id} onClick={() => navigate(`/watch/${m.slug}`)} className="sr-press" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', cursor: 'pointer' }}>
                   <span style={{ fontFamily: COND, fontSize: '1.5rem', fontWeight: 900, width: 26, color: i < 3 ? '#e50914' : 'rgba(255,255,255,.35)' }}>{i + 1}</span>
@@ -160,7 +161,7 @@ export default function Search() {
         </div>
       ) : searched && results.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
-          <div style={{ fontSize: '2.6rem', marginBottom: 8 }}>🔎</div>
+          <IconBadge name="search" size={60} color="#9ca3af" style={{ margin: '0 auto 12px' }} />
           <div style={{ fontFamily: COND, fontSize: '1.3rem', fontWeight: 800 }}>No results for “{q}”</div>
           <div style={{ fontSize: '.84rem', color: 'rgba(255,255,255,.5)', margin: '6px 0 18px' }}>Check the spelling, or try an actor, genre or language.</div>
           <button onClick={() => navigate('/browse')} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 20px', fontWeight: 800, cursor: 'pointer' }}>Browse all titles</button>

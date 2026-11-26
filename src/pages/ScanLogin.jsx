@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import jsQR from 'jsqr';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
@@ -6,7 +7,8 @@ import client from '../api/client';
 export default function ScanLogin() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const approvedRef = useRef('');
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
@@ -21,30 +23,35 @@ export default function ScanLogin() {
   // If token in URL (from QR scan), auto-approve
   useEffect(() => {
     const token = searchParams.get('token');
-    if (token) {
+    if (token && !authLoading) {
       if (user) {
         approveToken(token);
       } else {
         navigate(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       }
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const approveToken = async (token) => {
+    const t = String(token || '').toLowerCase();
+    if (!t || approvedRef.current === t) return; // never send the same code twice
+    approvedRef.current = t;
     setStatus('loading');
     setError('');
     try {
-      const res = await client.post('/tv_auth.php?action=approve', { token: token.toLowerCase() });
+      const res = await client.post('/tv_auth.php?action=approve', { token: t });
       if (res.data.ok) {
         setStatus('success');
         stopCamera();
       } else {
+        approvedRef.current = '';
         setStatus('error');
-        setError(res.data.error || 'Code invalid or expired');
+        setError(res.data.error === 'Unauthorized' ? 'Please sign in again on this phone, then scan the code.' : (res.data.error || 'Code invalid or expired'));
       }
     } catch {
+      approvedRef.current = '';
       setStatus('error');
-      setError('Network error. Please try again.');
+      setError('Could not reach Showmine. Check your connection and try again.');
     }
   };
 
@@ -62,7 +69,10 @@ export default function ScanLogin() {
         startScanning();
       }
     } catch (err) {
-      setCameraError('Camera access denied. Please allow camera permission or enter code manually.');
+      const name = err?.name || '';
+      setCameraError(name === 'NotAllowedError' || name === 'SecurityError'
+        ? 'Camera permission is off. Allow camera for Showmine in your phone settings, or type the code instead.'
+        : name === 'NotFoundError' ? 'No camera found on this device. Type the code instead.' : 'Could not start the camera. Type the code instead.');
       setMode('manual');
     }
   };
@@ -91,30 +101,20 @@ export default function ScanLogin() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-      // Use jsQR if available
-      if (window.jsQR) {
-        const code = window.jsQR(imageData.data, imageData.width, imageData.height);
-        if (code && code.data) {
-          const url = code.data;
-          // Extract token from URL
-          const match = url.match(/[?&]token=([a-f0-9]+)/i);
-          if (match) {
-            clearInterval(scannerRef.current);
-            stopCamera();
-            approveToken(match[1]);
-          }
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
+      if (code && code.data) {
+        // QR holds https://v2.showmine.ng/scan-login?token=..., or just the token
+        const match = code.data.match(/[?&]token=([a-f0-9]{8,64})/i) || code.data.match(/^([a-f0-9]{32,64})$/i);
+        if (match) {
+          clearInterval(scannerRef.current);
+          stopCamera();
+          approveToken(match[1]);
         }
       }
     }, 200);
   };
 
   useEffect(() => {
-    // Load jsQR library
-    if (!window.jsQR) {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
-      document.head.appendChild(script);
-    }
     return () => stopCamera();
   }, []);
 
@@ -124,6 +124,8 @@ export default function ScanLogin() {
     approveToken(code);
   };
 
+  if (authLoading) return <div style={{ background: '#000', minHeight: '100vh' }} />;
+
   if (!user) {
     return (
       <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
@@ -132,7 +134,7 @@ export default function ScanLogin() {
           <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.85rem', marginBottom: '1.5rem', lineHeight: 1.6 }}>
             You need to be signed in to approve a TV login
           </p>
-          <Link to="/login" style={{ display: 'inline-block', background: '#e50914', color: '#fff', borderRadius: 8, padding: '.75rem 1.5rem', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.95rem', fontWeight: 800, textDecoration: 'none', textTransform: 'uppercase' }}>
+          <Link to={`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`} style={{ display: 'inline-block', background: '#e50914', color: '#fff', borderRadius: 8, padding: '.75rem 1.5rem', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '.95rem', fontWeight: 800, textDecoration: 'none', textTransform: 'uppercase' }}>
             Sign In
           </Link>
         </div>

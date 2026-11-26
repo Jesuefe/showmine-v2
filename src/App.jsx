@@ -67,7 +67,7 @@ function DeepLinkHandler() {
         try {
           const url = new URL(event.url);
           const path = url.pathname;
-          if (path) navigate(path);
+          if (path) navigate(path + url.search);
         } catch (e) {}
       });
     }).catch(() => {});

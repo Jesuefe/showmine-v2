@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Icon from './Icon';
 import { isNativeApp, PLAY_STORE_URL } from '../utils/platform';
 
 const KEY = 'sm_getapp_dismissed';
@@ -22,7 +23,7 @@ export default function GetAppBanner({ bottom = 64 }) {
         <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.55)' }}>{android ? 'Smoother playback, Kids mode & offline-ready' : 'Coming soon to iPhone — keep watching here'}</div>
       </div>
       {android && <a href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer" style={{ background: '#e50914', color: '#fff', fontWeight: 800, fontSize: '.78rem', padding: '8px 14px', borderRadius: 999, textDecoration: 'none' }}>Get app</a>}
-      <button onClick={close} aria-label="Dismiss" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.5)', fontSize: '1.1rem', cursor: 'pointer', padding: 4 }}>✕</button>
+      <button onClick={close} aria-label="Dismiss" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.5)', cursor: 'pointer', padding: 4 }}><Icon name="x" size={18} /></button>
     </div>
   );
 }

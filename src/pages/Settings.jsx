@@ -57,7 +57,7 @@ export default function Settings() {
           <label style={{ display: 'block', marginBottom: 14 }}>
             <span style={{ display: 'block', fontSize: '.72rem', color: 'rgba(255,255,255,.5)', marginBottom: 6, fontWeight: 600 }}>App language</span>
             <select value={lang} onChange={(e) => setLang(e.target.value)} style={{ width: '100%', padding: '13px 14px', borderRadius: 10, background: '#111', border: '1px solid rgba(255,255,255,.1)', color: '#fff', fontSize: '.95rem' }}>
-              {Object.entries(languages || {}).map(([code, l]) => <option key={code} value={code}>{l.flag} {l.name}</option>)}
+              {Object.entries(languages || {}).map(([code, l]) => <option key={code} value={code}>{l.name}</option>)}
             </select>
           </label>
           <Button type="submit" loading={savingProfile}>Save profile</Button>

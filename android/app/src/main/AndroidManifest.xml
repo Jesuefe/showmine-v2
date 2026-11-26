@@ -21,6 +21,15 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- QR sign-in and shared links open straight in the app -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="v2.showmine.ng" android:pathPrefix="/scan-login" />
+                <data android:scheme="https" android:host="v2.showmine.ng" android:pathPrefix="/watch/" />
+            </intent-filter>
         </activity>
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -36,6 +45,8 @@
             android:value="ca-app-pub-1838174422371783~5904552034"/>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>

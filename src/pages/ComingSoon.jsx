@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Icon, { IconBadge } from '../components/Icon';
 import client from '../api/client';
 import { TrailerModal, getYouTubeId } from '../components/WatchDetails';
 import { PageHeader } from '../components/ui';
@@ -107,7 +108,7 @@ export default function ComingSoon() {
         <>
           <PageHeader title="Coming soon" />
           <div style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 8 }}>🎬</div>
+            <IconBadge name="clapper" size={64} style={{ margin: '0 auto 12px' }} />
             <div style={{ fontFamily: COND, fontSize: '1.4rem', fontWeight: 800 }}>New titles are on the way</div>
             <div style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.5)', marginTop: 6 }}>Check back soon for the next big African premieres.</div>
           </div>
@@ -135,7 +136,7 @@ export default function ComingSoon() {
                   <button onClick={() => setTrailer(hero)} className="cs-press" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '13px 16px', borderRadius: 10, background: 'rgba(255,255,255,.14)', border: '1px solid rgba(255,255,255,.25)', color: '#fff', fontFamily: COND, fontWeight: 800, fontSize: '1rem', textTransform: 'uppercase', cursor: 'pointer', backdropFilter: 'blur(8px)' }}>▶ Trailer</button>
                 )}
               </div>
-              {counts[hero.id] > 0 && <div style={{ fontSize: '.74rem', color: 'rgba(255,255,255,.5)', marginTop: 10 }}>🔔 {counts[hero.id].toLocaleString()} {counts[hero.id] === 1 ? 'person is' : 'people are'} waiting</div>}
+              {counts[hero.id] > 0 && <div style={{ fontSize: '.74rem', color: 'rgba(255,255,255,.5)', marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}><Icon name="bell" size={14} /> {counts[hero.id].toLocaleString()} {counts[hero.id] === 1 ? 'person is' : 'people are'} waiting</div>}
             </div>
           </div>
 
@@ -167,7 +168,7 @@ export default function ComingSoon() {
                       {m.description && <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.6)', lineHeight: 1.55, margin: '0 0 10px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{m.description}</p>}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <RemindButton notified={notified[m.id]} busy={busy[m.id]} onClick={() => remind(m)} />
-                        {counts[m.id] > 0 && <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)' }}>🔔 {counts[m.id]} waiting</span>}
+                        {counts[m.id] > 0 && <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.4)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon name="bell" size={12} /> {counts[m.id]} waiting</span>}
                       </div>
                     </div>
                   </div>

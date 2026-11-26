@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import SvgIcon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
@@ -109,7 +110,7 @@ export default function Profile() {
               background: isFree ? 'rgba(255,255,255,.08)' : 'linear-gradient(90deg,#f5c542,#e0a100)',
               color: isFree ? 'rgba(255,255,255,.6)' : '#1a1200', fontSize: '.64rem', fontWeight: 900,
               padding: '3px 10px', borderRadius: 20, letterSpacing: '.08em', textTransform: 'uppercase',
-            }}>{!isFree && '★'} {planName}</span>
+            }}>{!isFree && <SvgIcon name="star" size={11} style={{ display: 'inline-block', verticalAlign: '-1px', fill: 'currentColor' }} />} {planName}</span>
           </div>
           <button aria-label={t('settings')} onClick={() => navigate('/settings')} style={{ width: 40, height: 40, borderRadius: 12, background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.08)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
             <Icon name="gear" />
@@ -171,7 +172,7 @@ export default function Profile() {
           <Row icon="kids" label={t('kids_mode')} hint={kidsPlanOk === false ? 'Needs Standard plan — tap to see' : 'Safe, PIN-locked space for children'} tint="#f472b6" last
             onClick={() => navigate('/kids-setup')}
             badge={kidsPlanOk === false
-              ? <span style={{ fontSize: '.6rem', fontWeight: 900, padding: '3px 8px', borderRadius: 20, background: 'linear-gradient(90deg,#f5c542,#e0a100)', color: '#1a1200' }}>🔒 STANDARD</span>
+              ? <span style={{ fontSize: '.6rem', fontWeight: 900, padding: '3px 8px', borderRadius: 20, background: 'linear-gradient(90deg,#f5c542,#e0a100)', color: '#1a1200', display: 'inline-flex', alignItems: 'center', gap: 4 }}><SvgIcon name="lock" size={10} stroke={2.4} />STANDARD</span>
               : <span style={{ fontSize: '.62rem', fontWeight: 900, padding: '3px 8px', borderRadius: 20, background: kidsOn ? 'rgba(34,197,94,.15)' : 'rgba(255,255,255,.07)', color: kidsOn ? '#4ade80' : 'rgba(255,255,255,.45)' }}>{kidsOn ? 'ON' : 'OFF'}</span>} />
         </Section>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
 import { useI18n } from '../i18n/I18nContext';
@@ -23,8 +23,11 @@ function useIsMobile() {
 
 export default function Login() {
   const { t } = useI18n();
-  const { login, loginForce, setUser } = useAuth();
+  const { login, loginForce, completeLogin } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const nextRaw = params.get('next') || '/';
+  const next = nextRaw.startsWith('/') && !nextRaw.startsWith('//') ? nextRaw : '/';
   const isMobile = useIsMobile();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -48,7 +51,7 @@ export default function Login() {
     try {
       const res = await login(form.email, form.password);
       if (res.ok) {
-        navigate('/');
+        navigate(next, { replace: true });
       } else if (res.device_limit_reached) {
         setDeviceLimitInfo({ max_devices: res.max_devices, message: res.error });
       } else {
@@ -67,7 +70,7 @@ export default function Login() {
       const res = await loginForce(form.email, form.password);
       if (res.ok) {
         setDeviceLimitInfo(null);
-        navigate('/');
+        navigate(next, { replace: true });
       } else {
         setError(res.error || 'Login failed');
         setDeviceLimitInfo(null);
@@ -99,11 +102,8 @@ export default function Login() {
               clearInterval(pollRef.current);
               clearInterval(timerRef.current);
               setQrStatus('approved');
-              // Refresh user from session
-              client.get('/auth.php?action=me').then(me => {
-                if (me.data.ok) setUser(me.data.user);
-              });
-              setTimeout(() => navigate('/'), 1500);
+              completeLogin(r.data.token, r.data.user);
+              setTimeout(() => navigate(next, { replace: true }), 1200);
             } else if (r.data.status === 'expired') {
               clearInterval(pollRef.current);
               clearInterval(timerRef.current);

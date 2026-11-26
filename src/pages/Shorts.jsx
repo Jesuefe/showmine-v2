@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import Hls from 'hls.js';
 import { shorts as shortsApi, social } from '../api/extras';
@@ -85,7 +86,7 @@ function ShortItem({ item, active, muted, setMuted, onUpdate }) {
       )}
 
       <button onClick={() => setMuted(!muted)} aria-label={muted ? 'Unmute' : 'Mute'} style={{ position: 'absolute', top: 'calc(16px + env(safe-area-inset-top, 0px))', right: 14, background: 'rgba(0,0,0,.4)', border: 'none', color: '#fff', borderRadius: 20, padding: '7px 12px', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer' }}>
-        {muted ? '🔇 Tap for sound' : '🔊'}
+        {muted ? <><Icon name="volumeX" size={16} style={{ display: 'inline-block', verticalAlign: '-3px', marginRight: 6 }} />Tap for sound</> : <Icon name="volume" size={18} />}
       </button>
 
       <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%', background: 'linear-gradient(to top, rgba(0,0,0,.85), transparent)', pointerEvents: 'none' }} />

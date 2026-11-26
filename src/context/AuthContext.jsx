@@ -51,6 +51,12 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
+  // Used by QR / TV sign-in: the server already approved this device and sent its token.
+  const completeLogin = (token, u) => {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    if (u) { localStorage.setItem(USER_KEY, JSON.stringify(u)); setUser(u); }
+  };
+
   const logout = async () => {
     await client.post('/auth.php?action=logout').catch(() => {});
     setUser(null);
@@ -60,7 +66,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginForce, logout, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, loginForce, logout, setUser, completeLogin }}>
       {children}
     </AuthContext.Provider>
   );

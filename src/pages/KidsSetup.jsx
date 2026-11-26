@@ -4,10 +4,10 @@ import { useKids } from '../context/KidsContext';
 import { PinPad } from '../components/PinPad';
 
 const FEATURES = [
-  { emoji: '🛡️', title: 'Kids-only titles', text: 'Only shows made for children. Everything else is blocked, even by link.' },
-  { emoji: '🔒', title: 'PIN-locked exit', text: 'Menus, search and settings are hidden. Leaving needs your 4-digit PIN.' },
-  { emoji: '💬', title: 'No comments or sharing', text: 'Social features are switched off while Kids Mode is on.' },
-  { emoji: '🎨', title: 'Made for little hands', text: 'Big, colourful buttons and simple categories.' },
+  { icon: 'shieldCheck', title: 'Kids-only titles', text: 'Only shows made for children. Everything else is blocked, even by link.' },
+  { icon: 'lock', title: 'PIN-locked exit', text: 'Menus, search and settings are hidden. Leaving needs your 4-digit PIN.' },
+  { icon: 'messageOff', title: 'No comments or sharing', text: 'Social features are switched off while Kids Mode is on.' },
+  { icon: 'palette', title: 'Made for little hands', text: 'Big, colourful buttons and simple categories.' },
 ];
 
 const H = { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900 };
@@ -99,7 +99,7 @@ export default function KidsSetup() {
               background: 'radial-gradient(400px 200px at 0% 0%, #3b1d6e, transparent 70%), radial-gradient(400px 200px at 100% 100%, #0e4a6b, transparent 70%), #0b1026',
               border: '1px solid rgba(255,255,255,.08)',
             }}>
-              <div style={{ fontSize: '2.6rem', marginBottom: 6 }}>🧸</div>
+              <IconBadge name="smile" size={64} color="#facc15" style={{ margin: '0 auto 10px' }} />
               <h1 style={{ ...H, fontSize: '2rem', margin: '0 0 .3rem' }}>Kids Mode</h1>
               <p style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.6)', lineHeight: 1.6, margin: 0 }}>
                 A safe, locked space where your children can only watch shows made for them.
@@ -125,7 +125,7 @@ export default function KidsSetup() {
             <div style={{ ...card, padding: '6px 18px', marginBottom: 18 }}>
               {FEATURES.map((f, i) => (
                 <div key={f.title} style={{ display: 'flex', gap: 14, padding: '14px 0', borderBottom: i < FEATURES.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none' }}>
-                  <div style={{ fontSize: '1.4rem', width: 30, textAlign: 'center', flexShrink: 0 }}>{f.emoji}</div>
+                  <IconBadge name={f.icon} size={38} color="#facc15" />
                   <div>
                     <div style={{ fontSize: '.9rem', fontWeight: 800, marginBottom: 2 }}>{f.title}</div>
                     <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.5 }}>{f.text}</div>
@@ -139,7 +139,7 @@ export default function KidsSetup() {
                 borderRadius: 18, padding: '20px 18px', textAlign: 'center',
                 background: 'linear-gradient(135deg,#2a1d03,#120d02)', border: '1px solid rgba(245,197,66,.35)',
               }}>
-                <div style={{ fontSize: '2rem', marginBottom: 4 }}>🔒</div>
+                <IconBadge name="lock" size={52} color="#f5c542" style={{ margin: '0 auto 8px' }} />
                 <div style={{ ...H, fontSize: '1.35rem', marginBottom: 6 }}>Kids Mode is a Standard plan feature</div>
                 <div style={{ fontSize: '.84rem', color: 'rgba(255,255,255,.65)', lineHeight: 1.6, marginBottom: 16 }}>
                   You’re on the <b style={{ color: '#fff' }}>Free</b> plan. Upgrade to <b style={{ color: '#f5c542' }}>Standard</b> or a family/enterprise plan to give your children their own safe, PIN-locked space.
@@ -160,13 +160,13 @@ export default function KidsSetup() {
             ) : (
               <button style={primaryBtn} onClick={() => { setError(''); setStep('pin'); }}>Set up a PIN</button>
             )}
-            {planOk === true && <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', textAlign: 'center', marginTop: 12 }}>Included with your plan ✓</p>}
+            {planOk === true && <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', textAlign: 'center', marginTop: 12 }}>Included with your plan</p>}
           </>
         )}
 
         {(step === 'pin' || step === 'confirm') && (
           <div style={{ ...card, padding: '26px 18px 22px', textAlign: 'center' }}>
-            <div style={{ fontSize: '2rem', marginBottom: 6 }}>{step === 'pin' ? '🔐' : '✅'}</div>
+            <IconBadge name={step === 'pin' ? 'key' : 'checkCircle'} size={56} color="#facc15" style={{ margin: '0 auto 10px' }} />
             <h2 style={{ ...H, fontSize: '1.5rem', margin: '0 0 .3rem' }}>{step === 'pin' ? 'Create a parental PIN' : 'Confirm your PIN'}</h2>
             <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.5)', margin: '0 0 1.5rem' }}>
               {step === 'pin' ? 'Pick 4 digits your kids won’t guess. You’ll need it to leave Kids Mode.' : 'Enter the same 4 digits again.'}

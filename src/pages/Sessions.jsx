@@ -4,7 +4,7 @@ import { PageHeader } from '../components/ui';
 import { timeAgo } from '../components/ui';
 
 const H = { fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800 };
-const FLAGS = (cc) => cc && cc.length === 2 ? String.fromCodePoint(...[...cc.toUpperCase()].map(c => 127397 + c.charCodeAt(0))) : '';
+const CC = (cc) => cc && cc.length === 2 && cc !== 'XX' ? cc.toUpperCase() : '';
 
 function DeviceIcon({ platform, model }) {
   const isPc = platform === 'web' && /PC|Mac|browser/i.test(model || '');
@@ -94,7 +94,7 @@ export default function Sessions() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.75rem', marginTop: 6, color: live ? '#4ade80' : 'rgba(255,255,255,.45)' }}>
                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: live ? '#4ade80' : 'rgba(255,255,255,.25)', boxShadow: live ? '0 0 8px #4ade80' : 'none' }} />
                   {activeLabel(d.last_active, d.is_current)}
-                  <span style={{ color: 'rgba(255,255,255,.3)' }}>· {FLAGS(d.country)} {d.ip}</span>
+                  <span style={{ color: 'rgba(255,255,255,.3)' }}>· {CC(d.country) && <span style={{ fontSize: '.6rem', fontWeight: 800, letterSpacing: '.05em', padding: '1px 5px', borderRadius: 4, border: '1px solid rgba(255,255,255,.2)', marginRight: 4 }}>{CC(d.country)}</span>}{d.ip}</span>
                 </div>
                 <div style={{ fontSize: '.68rem', color: 'rgba(255,255,255,.3)', marginTop: 3 }}>Signed in {d.created_at ? new Date(d.created_at).toLocaleDateString() : '—'}</div>
               </div>

@@ -1,58 +1,59 @@
 import { useState } from 'react';
+import { IconBadge } from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 
 const COND = "'Barlow Condensed', sans-serif";
 const UPDATED = 'November 2026';
 
 const GLANCE = [
-  { icon: '🚫', title: 'We never sell your data', text: 'Your personal information is not sold to anyone.' },
-  { icon: '🎛️', title: 'You’re in control', text: 'See your devices, change details or delete your account any time.' },
-  { icon: '🔐', title: 'Protected', text: 'Encrypted connections, hashed passwords and PINs.' },
+  { icon: 'ban', title: 'We never sell your data', text: 'Your personal information is not sold to anyone.' },
+  { icon: 'sliders', title: 'You’re in control', text: 'See your devices, change details or delete your account any time.' },
+  { icon: 'lock', title: 'Protected', text: 'Encrypted connections, hashed passwords and PINs.' },
 ];
 
 const SECTIONS = [
-  { id: 'collect', icon: '📋', title: 'Information we collect', body: [
+  { id: 'collect', icon: 'clipboard', title: 'Information we collect', body: [
     'Account details you give us: name, email address, username and, if you choose, phone number.',
     'Payment information needed to process subscriptions. Card details are handled by our payment processor (Paystack) — we don’t store full card numbers.',
     'What you watch and do in the app: titles watched and how far you got, My List, likes, comments and searches, so we can resume playback and recommend content.',
     'Device information: phone make and model, operating system, app version and approximate country (from your IP address). We use it to show your Active Devices, keep your account secure and fix problems.',
   ] },
-  { id: 'use', icon: '⚙️', title: 'How we use it', body: [
+  { id: 'use', icon: 'settings', title: 'How we use it', body: [
     'To provide streaming and live TV, remember where you stopped watching, and recommend titles you may like.',
     'To process payments and manage your plan.',
     'To keep your account safe — for example spotting sign-ins from new devices.',
     'To answer support messages. When you contact support (including by shaking your phone) we attach your app version, phone model and the screen you were on.',
     'To send service messages and, if you allow it, notifications about new releases.',
   ] },
-  { id: 'share', icon: '🤝', title: 'Who we share it with', body: [
+  { id: 'share', icon: 'handshake', title: 'Who we share it with', body: [
     'We do not sell your personal data.',
     'Service providers that help us run Showmine: payment processing (Paystack), video delivery (Bunny CDN), push notifications (Firebase) and analytics. They may only use the data to provide their service to us.',
     'Advertising partners (Google AdMob) on ad-supported plans may use device identifiers to show ads.',
     'Embedded trailers come from YouTube, which has its own privacy policy. Showmine is not affiliated with YouTube or Google.',
     'Authorities, where the law requires it.',
   ] },
-  { id: 'kids', icon: '🧸', title: 'Children & Kids Mode', body: [
+  { id: 'kids', icon: 'smile', title: 'Children & Kids Mode', body: [
     'Showmine accounts are for adults. Children can watch through Kids Mode, which a parent turns on and locks with a 4-digit PIN.',
     'Your Kids PIN is stored only in hashed (scrambled) form. In Kids Mode, comments, sharing and other social features are switched off.',
     'We do not knowingly collect personal information from children under 13. If you think we have, contact us and we will delete it.',
   ] },
-  { id: 'security', icon: '🛡️', title: 'Keeping data secure', body: [
+  { id: 'security', icon: 'shield', title: 'Keeping data secure', body: [
     'All connections use HTTPS. Passwords and Kids PINs are hashed.',
     'Each signed-in device has its own secure sign-in token, which you can revoke from Profile → Active devices.',
   ] },
-  { id: 'rights', icon: '✋', title: 'Your rights', body: [
+  { id: 'rights', icon: 'user', title: 'Your rights', body: [
     'You can access and correct your details in Settings, and see or sign out devices in Active devices.',
     'You can delete your account and personal data from Settings → Delete account, or at v2.showmine.ng/delete-account.',
     'For any other request, contact privacy@showmine.ng. We respond within 30 days.',
   ] },
-  { id: 'retention', icon: '🗓️', title: 'How long we keep it', body: [
+  { id: 'retention', icon: 'calendar', title: 'How long we keep it', body: [
     'We keep your data while your account is active. When you delete your account, your profile, watch history, devices, likes, support tickets and notifications are removed straight away; comments are blanked.',
     'Payment records are kept only as long as tax and accounting law requires, and are no longer linked to your profile.',
   ] },
-  { id: 'cookies', icon: '🍪', title: 'Cookies & similar tech', body: [
+  { id: 'cookies', icon: 'cookie', title: 'Cookies & similar tech', body: [
     'On the website we use cookies to keep you signed in and remember preferences. The app stores similar information on your phone (for example your language and Kids Mode lock).',
   ] },
-  { id: 'changes', icon: '📝', title: 'Changes to this policy', body: [
+  { id: 'changes', icon: 'fileText', title: 'Changes to this policy', body: [
     'We may update this policy. If the changes are significant we will tell you in the app or by email.',
   ] },
 ];
@@ -88,7 +89,7 @@ export default function Privacy() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10, marginBottom: 22 }}>
           {GLANCE.map(g => (
             <div key={g.title} style={{ background: '#101013', border: '1px solid rgba(255,255,255,.07)', borderRadius: 16, padding: 16 }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{g.icon}</div>
+              <IconBadge name={g.icon} size={40} style={{ marginBottom: 10 }} />
               <div style={{ fontWeight: 800, fontSize: '.9rem', marginBottom: 3 }}>{g.title}</div>
               <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.55)', lineHeight: 1.5 }}>{g.text}</div>
             </div>
@@ -108,7 +109,7 @@ export default function Privacy() {
           return (
             <div key={s.id} id={`pp-${s.id}`} style={{ background: '#0d0d10', border: `1px solid ${isOpen ? 'rgba(229,9,20,.3)' : 'rgba(255,255,255,.06)'}`, borderRadius: 16, marginBottom: 10, overflow: 'hidden', scrollMarginTop: 16 }}>
               <button onClick={() => toggle(s.id)} aria-expanded={isOpen} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '15px 16px', background: 'none', border: 'none', color: '#fff', cursor: 'pointer', textAlign: 'left' }}>
-                <span style={{ fontSize: '1.2rem' }}>{s.icon}</span>
+                <IconBadge name={s.icon} size={34} color="#9ca3af" />
                 <span style={{ flex: 1, fontFamily: COND, fontSize: '1.15rem', fontWeight: 800 }}>{s.title}</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.5)" strokeWidth="2.2" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }}><polyline points="6 9 12 15 18 9"/></svg>
               </button>

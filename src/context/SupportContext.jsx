@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import Icon from '../components/Icon';
 import { isNativeApp } from '../utils/platform';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { support as supportApi } from '../api/extras';
@@ -10,11 +11,11 @@ export const SHAKE_KEY = 'sm_shake_support';
 export const shakeEnabled = () => { try { return localStorage.getItem(SHAKE_KEY) !== '0'; } catch { return true; } };
 
 const CATEGORIES = [
-  { id: 'technical', label: 'Playback / app', emoji: '🛠️' },
-  { id: 'billing', label: 'Payment', emoji: '💳' },
-  { id: 'account', label: 'Account', emoji: '👤' },
-  { id: 'content', label: 'Content request', emoji: '🎬' },
-  { id: 'other', label: 'Something else', emoji: '💬' },
+  { id: 'technical', label: 'Playback / app', icon: 'wrench' },
+  { id: 'billing', label: 'Payment', icon: 'card' },
+  { id: 'account', label: 'Account', icon: 'user' },
+  { id: 'content', label: 'Content request', icon: 'film' },
+  { id: 'other', label: 'Something else', icon: 'message' },
 ];
 
 const SupportContext = createContext({ openSupport: () => {} });
@@ -72,7 +73,7 @@ function SupportSheet({ onClose, fromShake }) {
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(229,9,20,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>{fromShake ? '📳' : '💬'}</div>
+              <div style={{ width: 44, height: 44, borderRadius: 14, background: 'rgba(229,9,20,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#e50914' }}><Icon name={fromShake ? 'vibrate' : 'lifebuoy'} size={22} /></div>
               <div>
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.4rem', fontWeight: 800, lineHeight: 1.1 }}>{fromShake ? 'Need a hand?' : 'Help & support'}</div>
                 <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.5)' }}>{fromShake ? 'You shook your phone. Tell us what went wrong.' : 'Our team reads every message.'}</div>
@@ -84,7 +85,7 @@ function SupportSheet({ onClose, fromShake }) {
                   padding: '8px 12px', borderRadius: 999, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
                   background: category === c.id ? '#e50914' : 'rgba(255,255,255,.06)', color: '#fff',
                   border: `1px solid ${category === c.id ? '#e50914' : 'rgba(255,255,255,.1)'}`,
-                }}>{c.emoji} {c.label}</button>
+                }}><Icon name={c.icon} size={15} style={{ display: 'inline-block', verticalAlign: '-3px', marginRight: 6 }} />{c.label}</button>
               ))}
             </div>
             <textarea ref={ref} value={message} onChange={e => setMessage(e.target.value)} maxLength={4000} rows={5}

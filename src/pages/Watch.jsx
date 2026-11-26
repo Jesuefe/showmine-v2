@@ -683,7 +683,7 @@ export default function Watch() {
 
   if (error) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh', flexDirection: 'column', gap: '1rem', textAlign: 'center', padding: '0 24px' }}>
-      {error === 'kids_locked' && <div style={{ fontSize: '3rem' }}>🙈</div>}
+      {error === 'kids_locked' && <IconBadge name="shieldCheck" size={64} color="#facc15" style={{ margin: '0 auto' }} />}
       <p style={{ color: 'rgba(255,255,255,.6)' }}>{error === 'kids_locked' ? 'This show isn’t available in Kids Mode.' : error}</p>
       <button onClick={() => navigate(kidsMode ? '/kids' : '/')} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 8, padding: '.75rem 1.5rem', cursor: 'pointer', fontWeight: 700 }}>{kidsMode ? 'Back to Kids' : 'Go Home'}</button>
     </div>

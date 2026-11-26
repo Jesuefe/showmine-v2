@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { IconBadge } from '../components/Icon';
 import { isNativeApp } from '../utils/platform';
 import { useNavigate, useParams } from 'react-router-dom';
 import { support as supportApi } from '../api/extras';
@@ -13,7 +14,7 @@ const STATUS = {
   resolved: { label: 'Resolved', color: '#4ade80' },
   closed: { label: 'Closed', color: 'rgba(255,255,255,.4)' },
 };
-const CAT = { technical: '🛠️', billing: '💳', account: '👤', content: '🎬', ads: '📢', other: '💬' };
+const CAT = { technical: 'wrench', billing: 'card', account: 'user', content: 'film', ads: 'megaphone', other: 'message' };
 
 function Badge({ status }) {
   const s = STATUS[status] || STATUS.open;
@@ -41,7 +42,7 @@ export function SupportList() {
 
         {isNativeApp() && (
         <label style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', borderRadius: 16, background: '#101013', border: '1px solid rgba(255,255,255,.06)', marginBottom: 20, cursor: 'pointer' }}>
-          <span style={{ fontSize: '1.4rem' }}>📳</span>
+          <IconBadge name="vibrate" size={40} />
           <span style={{ flex: 1 }}>
             <span style={{ display: 'block', fontWeight: 700, fontSize: '.88rem' }}>Shake to get help</span>
             <span style={{ display: 'block', fontSize: '.72rem', color: 'rgba(255,255,255,.45)' }}>Shake your phone anywhere in the app to report a problem</span>
@@ -60,7 +61,7 @@ export function SupportList() {
             display: 'flex', gap: 12, width: '100%', textAlign: 'left', padding: 14, marginBottom: 8, borderRadius: 14, cursor: 'pointer', color: '#fff',
             background: t.status === 'pending_user' ? 'rgba(229,9,20,.08)' : '#101013', border: `1px solid ${t.status === 'pending_user' ? 'rgba(229,9,20,.35)' : 'rgba(255,255,255,.06)'}`,
           }}>
-            <span style={{ fontSize: '1.3rem' }}>{CAT[t.category] || '💬'}</span>
+            <IconBadge name={CAT[t.category] || 'message'} size={40} color="#9ca3af" />
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                 <span style={{ fontWeight: 700, fontSize: '.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.subject}</span>

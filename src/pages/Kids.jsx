@@ -5,10 +5,10 @@ import { useKids } from '../context/KidsContext';
 import { PinDialog, ForgotPinDialog } from '../components/PinPad';
 
 const SECTIONS = [
-  { id: 'all',       label: 'Everything', emoji: '⭐', color: '#facc15' },
-  { id: 'animation', label: 'Cartoons',   emoji: '🎨', color: '#f472b6' },
-  { id: 'education', label: 'Learn',      emoji: '📚', color: '#38bdf8' },
-  { id: 'quizzes',   label: 'Quizzes',    emoji: '🧩', color: '#4ade80' },
+  { id: 'all',       label: 'Everything', icon: 'star', color: '#facc15' },
+  { id: 'animation', label: 'Cartoons',   icon: 'palette', color: '#f472b6' },
+  { id: 'education', label: 'Learn',      icon: 'book', color: '#38bdf8' },
+  { id: 'quizzes',   label: 'Quizzes',    icon: 'puzzle', color: '#4ade80' },
 ];
 const CARD_COLORS = ['#f472b6', '#38bdf8', '#facc15', '#4ade80', '#a78bfa', '#fb923c'];
 const FONT = "'Nunito', 'Baloo 2', ui-rounded, 'SF Pro Rounded', system-ui, sans-serif";
@@ -66,7 +66,7 @@ export default function Kids() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top) + 18px) 20px 6px' }}>
         <div>
-          <div style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.6)', fontWeight: 700 }}>{greeting()}! 👋</div>
+          <div style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.6)', fontWeight: 700 }}>{greeting()}!</div>
           <div style={{ fontSize: '1.55rem', fontWeight: 900, lineHeight: 1.15 }}>What shall we watch?</div>
         </div>
         <button onClick={() => setDialog('pin')} aria-label="Grown-ups: exit Kids Mode" style={{
@@ -91,7 +91,7 @@ export default function Kids() {
               fontSize: '.95rem', fontWeight: 900, cursor: 'pointer', fontFamily: FONT,
               boxShadow: on ? `0 8px 24px ${s.color}55` : 'none', transition: 'all .2s',
             }}>
-              <span style={{ fontSize: '1.15rem' }}>{s.emoji}</span>{s.label}
+              <Icon name={s.icon} size={18} stroke={2.2} />{s.label}
             </button>
           );
         })}
@@ -100,7 +100,7 @@ export default function Kids() {
       <div style={{ padding: '10px 20px 0' }}>
         {loading ? <SkeletonGrid /> : movies.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '.5rem' }}>🦒</div>
+            <IconBadge name="smile" size={72} color="#facc15" style={{ margin: '0 auto 12px' }} />
             <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>Nothing here yet!</div>
             <div style={{ fontSize: '.9rem', color: 'rgba(255,255,255,.55)', marginTop: 6 }}>New {current?.label.toLowerCase()} are coming soon.</div>
           </div>
@@ -118,7 +118,7 @@ export default function Kids() {
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(11,16,38,.95) 0%, rgba(11,16,38,.2) 55%, transparent 100%)' }} />
                 <div style={{ position: 'absolute', left: 18, right: 18, bottom: 16, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'inline-block', background: current?.color, color: '#1a1033', fontSize: '.68rem', fontWeight: 900, padding: '3px 10px', borderRadius: 999, marginBottom: 6 }}>⭐ TOP PICK</div>
+                    <div style={{ display: 'inline-block', background: current?.color, color: '#1a1033', fontSize: '.68rem', fontWeight: 900, padding: '3px 10px', borderRadius: 999, marginBottom: 6 }}><Icon name="star" size={11} stroke={2.4} style={{ display: 'inline-block', verticalAlign: '-1px', marginRight: 4, fill: 'currentColor' }} />TOP PICK</div>
                     <div style={{ fontSize: '1.35rem', fontWeight: 900, lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hero.title}</div>
                   </div>
                   <div style={{ flexShrink: 0, width: 56, height: 56, borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(0,0,0,.4)' }}>
@@ -137,7 +137,7 @@ export default function Kids() {
                       <div style={{ position: 'relative', aspectRatio: '2/3', borderRadius: 22, overflow: 'hidden', border: `3px solid ${c}`, background: '#1b1f3a', boxShadow: `0 10px 26px ${c}33` }}>
                         {m.cover_image
                           ? <img src={m.cover_image} alt={m.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.4rem' }}>🎬</div>}
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,.35)' }}><Icon name="film" size={34} /></div>}
                         <div style={{ position: 'absolute', right: 8, bottom: 8, width: 34, height: 34, borderRadius: '50%', background: c, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="#1a1033"><polygon points="7 4 20 12 7 20 7 4"/></svg>
                         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Icon from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useTranslatedTitles, useTranslatedMovie } from '../i18n/useTranslatedContent';
 import client from '../api/client';
@@ -92,12 +93,12 @@ function ContinueRow() {
 }
 
 const CATEGORIES = [
-  { label: 'Nollywood', genre: 'nollywood', emoji: '🎬' },
-  { label: 'International', genre: 'international', emoji: '🌍' },
-  { label: 'Sports', genre: 'sports', emoji: '⚽' },
-  { label: 'Documentaries', genre: 'documentary', emoji: '🎥' },
-  { label: 'Religious', genre: 'religious', emoji: '🙏' },
-  { label: 'Kids', genre: 'kids', emoji: '🧸' },
+  { label: 'Nollywood', genre: 'nollywood', icon: 'clapper' },
+  { label: 'International', genre: 'international', icon: 'globe' },
+  { label: 'Sports', genre: 'sports', icon: 'ball' },
+  { label: 'Documentaries', genre: 'documentary', icon: 'video' },
+  { label: 'Religious', genre: 'religious', icon: 'sun' },
+  { label: 'Kids', genre: 'kids', icon: 'smile' },
 ];
 
 function RowTitle({ label, title, onSeeAll }) {
@@ -126,7 +127,7 @@ function CategoryChips() {
           background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.1)', color: '#fff',
           fontSize: '.8rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
         }}>
-          <span>{c.emoji}</span>{c.label}
+          <Icon name={c.icon} size={15} />{c.label}
         </button>
       ))}
     </div>

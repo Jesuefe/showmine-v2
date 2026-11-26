@@ -15,7 +15,8 @@ export default function LanguageSelector({ compact = false }) {
         borderRadius: 8, padding: compact ? '6px 10px' : '8px 12px',
         color: 'rgba(255,255,255,.7)', cursor: 'pointer', fontSize: '.78rem', fontWeight: 600
       }}>
-        <span style={{ fontSize: '1rem' }}>{current?.flag}</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/></svg>
+        <span style={{ fontWeight: 800, letterSpacing: '.04em' }}>{(lang || '').toUpperCase()}</span>
         {!compact && <span>{current?.name}</span>}
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
       </button>
@@ -39,7 +40,7 @@ export default function LanguageSelector({ compact = false }) {
                 cursor: 'pointer', fontSize: '.82rem', fontWeight: lang === code ? 700 : 500,
                 textAlign: 'left'
               }}>
-                <span style={{ fontSize: '1.1rem' }}>{info.flag}</span>
+                <span style={{ fontSize: '.62rem', fontWeight: 800, letterSpacing: '.05em', padding: '3px 6px', borderRadius: 5, background: 'rgba(255,255,255,.08)', minWidth: 24, textAlign: 'center' }}>{code.toUpperCase()}</span>
                 {info.name}
               </button>
             ))}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconBadge } from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { account } from '../api/extras';
@@ -7,17 +8,17 @@ import { account } from '../api/extras';
 const COND = "'Barlow Condensed', sans-serif";
 
 const REMOVED = [
-  ['👤', 'Profile & login', 'Name, email, password and every signed-in device'],
-  ['🕘', 'Watch history', 'Continue watching, progress and viewing stats'],
-  ['❤️', 'My List & likes', 'Saved titles, likes and reminders'],
-  ['💬', 'Comments & support', 'Comments are blanked; support tickets are removed'],
-  ['🔔', 'Notifications', 'Push tokens and in-app notifications'],
+  ['user', 'Profile & login', 'Name, email, password and every signed-in device'],
+  ['history', 'Watch history', 'Continue watching, progress and viewing stats'],
+  ['heart', 'My List & likes', 'Saved titles, likes and reminders'],
+  ['message', 'Comments & support', 'Comments are blanked; support tickets are removed'],
+  ['bell', 'Notifications', 'Push tokens and in-app notifications'],
 ];
 
 const ALTERNATIVES = [
-  ['💳', 'Just want to stop paying?', 'Your plan simply ends on its expiry date if you don’t renew.', '/subscribe'],
-  ['📱', 'Worried about another device?', 'Sign out devices you don’t recognise instead.', '/sessions'],
-  ['🛟', 'Something not working?', 'Tell our support team — we’re happy to help.', '/support'],
+  ['card', 'Just want to stop paying?', 'Your plan simply ends on its expiry date if you don’t renew.', '/subscribe'],
+  ['phone', 'Worried about another device?', 'Sign out devices you don’t recognise instead.', '/sessions'],
+  ['lifebuoy', 'Something not working?', 'Tell our support team — we’re happy to help.', '/support'],
 ];
 
 const input = {
@@ -54,7 +55,7 @@ export default function DeleteAccount() {
     return (
       <div style={{ background: '#000', minHeight: '100vh', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, textAlign: 'center' }}>
         <div style={{ maxWidth: 380 }}>
-          <div style={{ fontSize: '3rem', marginBottom: 10 }}>👋</div>
+          <IconBadge name="checkCircle" size={64} color="#22c55e" style={{ margin: '0 auto 14px' }} />
           <h1 style={{ fontFamily: COND, fontSize: '2rem', fontWeight: 900, margin: '0 0 8px' }}>Your account has been deleted</h1>
           <p style={{ fontSize: '.88rem', color: 'rgba(255,255,255,.6)', lineHeight: 1.6, marginBottom: 22 }}>Thank you for watching with Showmine. You’re always welcome back — just create a new account.</p>
           <button onClick={() => navigate('/onboarding', { replace: true })} style={{ width: '100%', padding: 14, borderRadius: 12, border: 'none', background: '#e50914', color: '#fff', fontFamily: COND, fontSize: '1.05rem', fontWeight: 800, textTransform: 'uppercase', cursor: 'pointer' }}>Done</button>
@@ -88,7 +89,7 @@ export default function DeleteAccount() {
             <div style={{ background: '#101013', border: '1px solid rgba(255,255,255,.07)', borderRadius: 16, padding: '4px 16px', marginBottom: 14 }}>
               {REMOVED.map(([ic, t, d], i) => (
                 <div key={t} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '12px 0', borderBottom: i < REMOVED.length - 1 ? '1px solid rgba(255,255,255,.05)' : 'none' }}>
-                  <span style={{ fontSize: '1.2rem', width: 26, textAlign: 'center' }}>{ic}</span>
+                  <IconBadge name={ic} size={34} color="#9ca3af" />
                   <span style={{ flex: 1 }}>
                     <span style={{ display: 'block', fontWeight: 700, fontSize: '.88rem' }}>{t}</span>
                     <span style={{ display: 'block', fontSize: '.74rem', color: 'rgba(255,255,255,.45)' }}>{d}</span>
@@ -98,7 +99,7 @@ export default function DeleteAccount() {
               ))}
             </div>
             <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.5)', lineHeight: 1.6, background: 'rgba(245,197,66,.06)', border: '1px solid rgba(245,197,66,.25)', borderRadius: 12, padding: '12px 14px', marginBottom: 20 }}>
-              ⚠️ This can’t be undone. An active subscription is not refunded and ends with the account. Payment records are kept only as long as tax law requires and are no longer linked to you.
+              This can’t be undone. An active subscription is not refunded and ends with the account. Payment records are kept only as long as tax law requires and are no longer linked to you.
             </div>
 
             {user && (
@@ -106,7 +107,7 @@ export default function DeleteAccount() {
                 <div style={{ fontFamily: COND, fontSize: '.72rem', fontWeight: 800, letterSpacing: '.16em', color: 'rgba(255,255,255,.4)', margin: '0 4px 8px' }}>BEFORE YOU GO</div>
                 {ALTERNATIVES.map(([ic, t, d, to]) => (
                   <button key={t} onClick={() => navigate(to)} style={{ width: '100%', display: 'flex', gap: 12, alignItems: 'center', textAlign: 'left', padding: 14, marginBottom: 8, borderRadius: 14, background: '#0d0d10', border: '1px solid rgba(255,255,255,.06)', color: '#fff', cursor: 'pointer' }}>
-                    <span style={{ fontSize: '1.2rem' }}>{ic}</span>
+                    <IconBadge name={ic} size={34} color="#e50914" />
                     <span style={{ flex: 1 }}>
                       <span style={{ display: 'block', fontWeight: 700, fontSize: '.85rem' }}>{t}</span>
                       <span style={{ display: 'block', fontSize: '.74rem', color: 'rgba(255,255,255,.45)' }}>{d}</span>

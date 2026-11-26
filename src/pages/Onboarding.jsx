@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconBadge } from '../components/Icon';
 import { useNavigate } from 'react-router-dom';
 import { RED, heading, Button } from '../components/ui';
 
@@ -6,9 +7,9 @@ export const ONBOARDED_KEY = 'sm_onboarded';
 export const isOnboarded = () => { try { return localStorage.getItem(ONBOARDED_KEY) === '1'; } catch { return true; } };
 
 const slides = [
-  { icon: '🎬', title: 'African stories, anytime', text: 'Nollywood hits, series, documentaries and originals — stream them all in one place.' },
-  { icon: '📡', title: 'Live TV & sports', text: 'Catch live channels and matches as they happen, in HD or data-saver mode.' },
-  { icon: '⚡', title: 'Shorts & more', text: 'Swipe through quick clips, save titles to your list, and pick up right where you stopped.' },
+  { icon: 'clapper', title: 'African stories, anytime', text: 'Nollywood hits, series, documentaries and originals — stream them all in one place.' },
+  { icon: 'broadcast', title: 'Live TV & sports', text: 'Catch live channels and matches as they happen, in HD or data-saver mode.' },
+  { icon: 'zap', title: 'Shorts & more', text: 'Swipe through quick clips, save titles to your list, and pick up right where you stopped.' },
 ];
 
 export default function Onboarding() {
@@ -26,7 +27,7 @@ export default function Onboarding() {
       </div>
 
       <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', animation: 'smfade .35s ease' }}>
-        <div style={{ fontSize: '4.5rem', marginBottom: 24 }} aria-hidden>{s.icon}</div>
+        <IconBadge name={s.icon} size={96} style={{ margin: '0 auto 24px' }} />
         <h1 style={{ ...heading, fontSize: '2rem', margin: '0 0 12px' }}>{s.title}</h1>
         <p style={{ color: 'rgba(255,255,255,.65)', fontSize: '1rem', lineHeight: 1.6, maxWidth: 340, margin: 0 }}>{s.text}</p>
       </div>
