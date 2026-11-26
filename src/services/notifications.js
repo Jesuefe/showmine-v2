@@ -1,6 +1,12 @@
 import { PushNotifications } from '@capacitor/push-notifications';
 
+// Push needs a google-services.json that matches the app's package name.
+// CI sets VITE_ENABLE_PUSH=true only when one is supplied; otherwise
+// calling register() would crash the native app (Firebase not initialised).
+const PUSH_ENABLED = import.meta.env.VITE_ENABLE_PUSH === 'true';
+
 export async function initPushNotifications(userId) {
+  if (!PUSH_ENABLED) return;
   try {
     const permission = await PushNotifications.requestPermissions();
     if (permission.receive !== 'granted') return;

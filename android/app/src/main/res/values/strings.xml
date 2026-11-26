@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">Showmine TV</string>
     <string name="title_activity_main">Showmine TV</string>
-    <string name="package_name">com.showminetventertainment.showminetvapptv</string>
-    <string name="custom_url_scheme">com.showminetventertainment.showminetvapptv</string>
+    <string name="package_name">com.showminetventertainment.showminetv</string>
+    <string name="custom_url_scheme">com.showminetventertainment.showminetv</string>
 </resources>

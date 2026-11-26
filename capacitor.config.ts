@@ -1,7 +1,7 @@
 ﻿import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.showminetventertainment.showminetvapptv',
+  appId: 'com.showminetventertainment.showminetv',
   appName: 'Showmine TV',
   webDir: 'dist',
   plugins: {
@@ -20,7 +20,7 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true,
     captureInput: true,
-    webContentsDebuggingEnabled: true,
+    webContentsDebuggingEnabled: false,
   },
   server: {
     androidScheme: 'https',
