@@ -13,7 +13,8 @@ const client = axios.create({
 // Attach token to every request
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);
-  if (token) {
+  // A caller may pass its own token (or '' for none); don't overwrite it
+  if (token && config.headers['X-Auth-Token'] === undefined) {
     config.headers['X-Auth-Token'] = token;
   }
   return config;
