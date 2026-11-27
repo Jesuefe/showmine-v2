@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import SvgIcon from '../components/Icon';
+import Avatar, { AvatarPicker } from '../components/Avatar';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
@@ -71,6 +72,7 @@ export default function Profile() {
   const { active: kidsOn, planOk: kidsPlanOk } = useKids();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ list: null, progress: null });
+  const [picking, setPicking] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
   const [version, setVersion] = useState('');
 
@@ -88,22 +90,23 @@ export default function Profile() {
   const planName = sub?.plan || 'Free';
   const isFree = !sub || /free/i.test(planName);
   const name = user?.full_name || user?.username || 'Viewer';
-  const initials = name.split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
   const left = daysLeft(sub?.expires_at);
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', paddingBottom: 40 }}>
+      {picking && <AvatarPicker onClose={() => setPicking(false)} />}
       {/* Hero header */}
       <div style={{
         position: 'relative', padding: '28px 20px 22px',
         background: 'radial-gradient(500px 220px at 0% 0%, rgba(229,9,20,.35), transparent 70%), radial-gradient(400px 200px at 100% 0%, rgba(120,40,200,.22), transparent 70%)',
       }}>
         <div style={{ maxWidth: 600, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 72, height: 72, borderRadius: 22, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'linear-gradient(135deg,#e50914,#7a0a10)', fontSize: '1.6rem', fontWeight: 900, color: '#fff',
-            boxShadow: '0 10px 30px rgba(229,9,20,.4)', ...H,
-          }}>{initials}</div>
+          <button onClick={() => setPicking(true)} aria-label="Change profile picture" style={{ position: 'relative', padding: 0, border: 'none', background: 'none', cursor: 'pointer', flexShrink: 0, borderRadius: 22 }}>
+            <Avatar user={user} size={76} radius={22} style={{ boxShadow: '0 10px 30px rgba(0,0,0,.5)' }} />
+            <span style={{ position: 'absolute', right: -4, bottom: -4, width: 26, height: 26, borderRadius: '50%', background: '#fff', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,.5)' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>
+            </span>
+          </button>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ ...H, fontSize: '1.55rem', lineHeight: 1.05, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
             <div style={{ fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email}</div>
@@ -125,7 +128,7 @@ export default function Profile() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
           {[
             { v: stats.list, l: 'In My List', go: '/watchlist' },
-            { v: stats.progress, l: 'In progress', go: '/' },
+            { v: stats.progress, l: 'In progress', go: '/continue-watching' },
             { v: kidsOn ? 'On' : 'Off', l: 'Kids Mode', go: '/kids-setup' },
           ].map(s => (
             <button key={s.l} onClick={() => navigate(s.go)} style={{ background: '#101013', border: '1px solid rgba(255,255,255,.06)', borderRadius: 14, padding: '14px 8px', color: '#fff', cursor: 'pointer' }}>

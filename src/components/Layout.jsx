@@ -6,6 +6,7 @@ import LanguageSelector from './LanguageSelector';
 import { useI18n } from '../i18n/I18nContext';
 import { useKids } from '../context/KidsContext';
 import { downloadsSupported } from '../utils/downloads';
+import Avatar from './Avatar';
 
 function useIsMobile() {
   // Check if it's a mobile/tablet device using user agent
@@ -122,13 +123,7 @@ function Sidebar() {
 
         {/* User info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', marginBottom: 4 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%', background: '#e50914',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '.82rem', fontWeight: 900, color: '#fff', flexShrink: 0
-          }}>
-            {user?.full_name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'U'}
-          </div>
+          <Avatar user={user} size={32} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '.78rem', fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {user?.full_name || user?.username}
@@ -218,12 +213,8 @@ function MobileTopNav() {
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
         </button>
-        <div onClick={() => navigate('/profile')} style={{
-          width: 32, height: 32, borderRadius: '50%', background: '#e50914',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '.82rem', fontWeight: 900, color: '#fff', cursor: 'pointer'
-        }}>
-          {user?.full_name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'U'}
+        <div onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }} aria-label="Profile">
+          <Avatar user={user} size={32} ring="rgba(255,255,255,.18)" />
         </div>
       </div>
     </div>

@@ -69,8 +69,9 @@ function ContinueRow() {
   if (!items.length) return null;
   return (
     <div style={{ marginBottom: '2.2rem' }}>
-      <div style={{ padding: '0 20px .65rem', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>
-        {t('continue_watching')}
+      <div style={{ padding: '0 20px .65rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.1rem', fontWeight: 800, color: '#fff' }}>{t('continue_watching')}</span>
+        <button onClick={() => navigate('/continue-watching')} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.55)', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer' }}>See all ›</button>
       </div>
       <div style={{ display: 'flex', gap: 10, overflowX: 'auto', padding: '2px 20px 8px', scrollbarWidth: 'none' }}>
         {items.map(m => (

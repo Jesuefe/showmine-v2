@@ -9,6 +9,7 @@ import { shareMovie } from '../services/share';
 import client from '../api/client';
 import { useKids } from '../context/KidsContext';
 import { EpisodeDownload } from '../components/DownloadButton';
+import { IconBadge } from '../components/Icon';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
 
@@ -56,7 +57,63 @@ function MovieCard({ movie }) {
 // 
 // SHOWMINE PLAYER
 // 
-function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) {
+// Transparent 1x1 poster: stops Android WebView drawing its grey play-icon placeholder.
+const BLANK_POSTER = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+
+function PlayerLoader({ backdrop, title }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', background: '#000', pointerEvents: 'none' }}>
+      {backdrop && <img src={backdrop} alt="" style={{ position: 'absolute', inset: '-10%', width: '120%', height: '120%', objectFit: 'cover', filter: 'blur(28px) brightness(.35) saturate(1.3)', animation: 'smKen 9s ease-in-out infinite alternate' }} />}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(229,9,20,.18), transparent 55%)' }} />
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+        <div style={{ position: 'relative', width: 78, height: 78 }}>
+          <svg width="78" height="78" viewBox="0 0 78 78" style={{ position: 'absolute', inset: 0, animation: 'spin 1.1s linear infinite' }}>
+            <circle cx="39" cy="39" r="34" fill="none" stroke="rgba(255,255,255,.08)" strokeWidth="4" />
+            <circle cx="39" cy="39" r="34" fill="none" stroke="#e50914" strokeWidth="4" strokeLinecap="round" strokeDasharray="60 154" />
+          </svg>
+          <svg width="78" height="78" viewBox="0 0 78 78" style={{ position: 'absolute', inset: 0, animation: 'spin 1.8s linear infinite reverse' }}>
+            <circle cx="39" cy="39" r="25" fill="none" stroke="rgba(255,255,255,.55)" strokeWidth="2" strokeLinecap="round" strokeDasharray="22 135" />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+            {[0, 1, 2, 3].map(i => <span key={i} style={{ width: 3.5, height: 18, borderRadius: 2, background: '#fff', transformOrigin: 'center', animation: `smEq .9s ease-in-out ${i * .12}s infinite` }} />)}
+          </div>
+        </div>
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, letterSpacing: '.32em', fontSize: '.8rem', paddingLeft: '.32em', background: 'linear-gradient(90deg, rgba(255,255,255,.35) 0%, #fff 45%, #e50914 55%, rgba(255,255,255,.35) 100%)', backgroundSize: '250% 100%', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', animation: 'smSweep 1.8s linear infinite' }}>SHOWMINE</div>
+        {title && <div style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.45)', maxWidth: 240, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>}
+      </div>
+    </div>
+  );
+}
+
+function SeekRipple({ side, amount, k }) {
+  const fwd = side === 'forward';
+  return (
+    <div key={k} style={{ position: 'absolute', top: 0, bottom: 0, [fwd ? 'right' : 'left']: 0, width: '38%', zIndex: 6, pointerEvents: 'none', overflow: 'hidden',
+      borderRadius: fwd ? '50% 0 0 50% / 50% 0 0 50%' : '0 50% 50% 0 / 0 50% 50% 0', background: 'rgba(255,255,255,.10)', animation: 'smFade .7s ease forwards' }}>
+      <span style={{ position: 'absolute', top: '50%', [fwd ? 'left' : 'right']: '40%', width: 120, height: 120, margin: '-60px', borderRadius: '50%', background: 'rgba(255,255,255,.25)', animation: 'smRipple .55s ease-out forwards' }} />
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: fwd ? 'row' : 'row-reverse' }}>
+          {[0, 1, 2].map(i => (
+            <svg key={i} width="16" height="18" viewBox="0 0 16 18" style={{ animation: `smChev .6s ease ${i * .1}s both` }}>
+              <path d={fwd ? 'M2 1 L14 9 L2 17Z' : 'M14 1 L2 9 L14 17Z'} fill="#fff" />
+            </svg>
+          ))}
+        </div>
+        <span style={{ color: '#fff', fontWeight: 800, fontSize: '.8rem', textShadow: '0 1px 6px rgba(0,0,0,.6)' }}>{fwd ? '+' : '−'}{amount} seconds</span>
+      </div>
+    </div>
+  );
+}
+
+const PLAYER_CSS = `@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes smEq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+@keyframes smSweep{from{background-position:100% 0}to{background-position:-150% 0}}
+@keyframes smKen{from{transform:scale(1)}to{transform:scale(1.12) translate(2%,1%)}}
+@keyframes smRipple{from{transform:scale(.2);opacity:.9}to{transform:scale(3.2);opacity:0}}
+@keyframes smChev{0%{opacity:.15}50%{opacity:1}100%{opacity:.15}}
+@keyframes smFade{0%,70%{opacity:1}100%{opacity:0}}`;
+
+function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, backdrop }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const containerRef = useRef(null);
@@ -73,7 +130,10 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
   const [fullscreen, setFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [showSkip, setShowSkip] = useState(null);
+  const [skip, setSkip] = useState(null); // { side, amount, k }
+  const skipTimer = useRef(null);
+  const tapRef = useRef({ t: 0, side: null, timer: null });
+  const lastTouchAt = useRef(0);
   const [showVolume, setShowVolume] = useState(false);
   const [showBrightness, setShowBrightness] = useState(false);
   const [brightness, setBrightness] = useState(1);
@@ -276,6 +336,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
   const togglePlay = () => {
     const vid = videoRef.current;
     if (!vid) return;
+    if (Date.now() - lastTouchAt.current < 700) return; // touch taps are handled in onTouchEnd
     if (vid.paused) { vid.play(); } else { vid.pause(); }
     showControlsTemp();
   };
@@ -283,10 +344,12 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
   const seek = (secs) => {
     const vid = videoRef.current;
     if (!vid) return;
-    vid.currentTime = Math.max(0, Math.min(vid.duration, vid.currentTime + secs));
-    setShowSkip(secs > 0 ? 'forward' : 'backward');
-    setTimeout(() => setShowSkip(null), 800);
-    showControlsTemp();
+    const d = isFinite(vid.duration) ? vid.duration : vid.currentTime + Math.abs(secs);
+    vid.currentTime = Math.max(0, Math.min(d, vid.currentTime + secs));
+    const side = secs > 0 ? 'forward' : 'backward';
+    setSkip(prev => ({ side, amount: (prev && prev.side === side ? prev.amount : 0) + Math.abs(secs), k: Date.now() }));
+    clearTimeout(skipTimer.current);
+    skipTimer.current = setTimeout(() => setSkip(null), 750);
   };
 
   const toggleFullscreen = () => {
@@ -311,6 +374,9 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
   };
 
   const onTouchStart = (e) => {
+    lastTouchAt.current = Date.now();
+    // Buttons and the seek bar handle their own touches.
+    if (e.target.closest?.('button,input,[data-noseek]')) { touchStartRef.current = null; return; }
     touchStartRef.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
@@ -319,7 +385,39 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
     };
   };
 
+  // Double-tap the left/right of the picture to jump 10s (keep tapping to add more).
+  // A single tap shows or hides the controls; double-tap in the middle plays/pauses.
+  const handleTap = (fx) => {
+    const now = Date.now();
+    const zone = fx < 0.4 ? 'backward' : fx > 0.6 ? 'forward' : 'middle';
+    const tap = tapRef.current;
+    const seeking = skip && skip.side === zone && now - tap.t < 900;
+    if ((now - tap.t < 300 && tap.side === zone) || seeking) {
+      clearTimeout(tap.timer);
+      tap.t = now; tap.side = zone;
+      if (zone === 'middle') {
+        const vid = videoRef.current;
+        if (vid) { if (vid.paused) vid.play().catch(() => {}); else vid.pause(); }
+        showControlsTemp();
+      } else {
+        setShowControls(false);
+        seek(zone === 'forward' ? 10 : -10);
+      }
+      return;
+    }
+    tap.t = now; tap.side = zone;
+    clearTimeout(tap.timer);
+    tap.timer = setTimeout(() => {
+      setShowControls(v => {
+        clearTimeout(controlsTimer.current);
+        if (!v) controlsTimer.current = setTimeout(() => setShowControls(false), 3000);
+        return !v;
+      });
+    }, 260);
+  };
+
   const onTouchEnd = (e) => {
+    lastTouchAt.current = Date.now();
     if (!touchStartRef.current) return;
     const { x, y, time, width } = touchStartRef.current;
     const dx = e.changedTouches[0].clientX - x;
@@ -352,7 +450,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
       return;
     }
 
-    if (Math.abs(dx) < 10 && Math.abs(dy) < 10) showControlsTemp();
+    if (Math.abs(dx) < 12 && Math.abs(dy) < 12) handleTap(x / width);
     touchStartRef.current = null;
   };
 
@@ -375,16 +473,13 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
       <video
         ref={videoRef}
         playsInline
+        poster={BLANK_POSTER}
         controlsList="nodownload noremoteplayback"
         onContextMenu={e => e.preventDefault()}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
       />
 
-      {loading && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5 }}>
-          <div style={{ width: 48, height: 48, border: '3px solid rgba(255,255,255,.15)', borderTop: '3px solid #e50914', borderRadius: '50%', animation: 'spin .7s linear infinite' }} />
-        </div>
-      )}
+      {loading && !error && <PlayerLoader backdrop={backdrop} title={currentTime > 0 ? null : title} />}
 
       {error && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 12, zIndex: 5 }}>
@@ -392,21 +487,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
         </div>
       )}
 
-      {showSkip && (
-        <div style={{
-          position: 'absolute', top: '50%', transform: 'translateY(-50%)',
-          [showSkip === 'forward' ? 'right' : 'left']: '15%',
-          zIndex: 6, background: 'rgba(0,0,0,.5)', borderRadius: '50%',
-          width: 64, height: 64, display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: 2
-        }}>
-          {showSkip === 'forward'
-            ? <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
-            : <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M18.41 7.41L13.82 12l4.59 4.59L17 18l-6-6 6-6zM8 6H6v12h2z"/></svg>
-          }
-          <span style={{ color: '#fff', fontSize: '.65rem', fontWeight: 700 }}>10s</span>
-        </div>
-      )}
+      {skip && <SeekRipple side={skip.side} amount={skip.amount} k={skip.k} />}
 
       {showVolume && (
         <div style={{ position: 'absolute', right: '10%', top: '50%', transform: 'translateY(-50%)', zIndex: 6, background: 'rgba(0,0,0,.6)', borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -460,7 +541,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
           </button>
         </div>
 
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 16px 14px' }} onClick={e => e.stopPropagation()}>
+        <div data-noseek style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 16px 14px' }} onClick={e => e.stopPropagation()}>
           <div style={{ marginBottom: 10 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.8)', fontWeight: 600 }}>{formatTime(currentTime)}</span>
@@ -523,7 +604,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId }) 
         </div>
       </div>
 
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <style>{PLAYER_CSS}</style>
     </div>
   );
 }
@@ -584,7 +665,7 @@ function AdPlayer({ ad, onFinish, movieId }) {
 
   return (
     <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', maxHeight: '82vh', background: '#000' }}>
-      <video ref={videoRef} playsInline
+      <video ref={videoRef} playsInline poster={BLANK_POSTER}
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }}
         onContextMenu={e => e.preventDefault()}
       />
@@ -742,6 +823,7 @@ export default function Watch() {
           onBack={() => setPlaying(false)}
           movieId={movie.id}
           episodeId={episodeId}
+          backdrop={movie.banner_image || movie.cover_image}
         />
       )}
 

@@ -20,6 +20,7 @@ import Search from './pages/Search';
 import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
 import Watchlist from './pages/Watchlist';
+import ContinueWatching from './pages/ContinueWatching';
 import Downloads from './pages/Downloads';
 import OfflineGate from './components/OfflineGate';
 import ComingSoon from './pages/ComingSoon';
@@ -109,6 +110,7 @@ export default function App() {
               <Route path="/profile"          element={<PL><Profile /></PL>} />
               <Route path="/subscribe"        element={<PL><Subscribe /></PL>} />
               <Route path="/watchlist"        element={<PL><Watchlist /></PL>} />
+              <Route path="/continue-watching" element={<PL><ContinueWatching /></PL>} />
               <Route path="/downloads"        element={<PL><Downloads /></PL>} />
               <Route path="/coming-soon"      element={<PL><ComingSoon /></PL>} />
               <Route path="/subscribe/verify" element={<SubscribeVerify />} />

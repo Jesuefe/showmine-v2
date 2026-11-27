@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react';
 import Icon from './Icon';
+import Avatar from './Avatar';
 import { social } from '../api/extras';
 import { RED, Spinner, timeAgo } from './ui';
 
-function Avatar({ name, src }) {
-  if (src) return <img src={src} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />;
-  return (
-    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(229,9,20,.2)', color: RED, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '.8rem', flexShrink: 0 }}>
-      {(name || '?').trim().charAt(0).toUpperCase()}
-    </div>
-  );
-}
 
 // Comment list + composer. `type` is movie | episode | short.
 export function CommentList({ type, id, onCount }) {
@@ -64,7 +57,7 @@ export function CommentList({ type, id, onCount }) {
         <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.85rem', textAlign: 'center', padding: '20px 0' }}>No comments yet. Be the first.</p>
       ) : items.map((c) => (
         <div key={c.id} style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-          <Avatar name={c.name} src={c.avatar} />
+          <Avatar user={{ name: c.name, avatar: c.avatar }} size={32} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '.75rem', color: 'rgba(255,255,255,.5)', marginBottom: 2 }}>
               <strong style={{ color: 'rgba(255,255,255,.85)' }}>{c.name}</strong> · {timeAgo(c.created_at)}

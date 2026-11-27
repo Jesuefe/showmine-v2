@@ -2,6 +2,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useKids } from '../context/KidsContext';
 import { PinPad } from '../components/PinPad';
+import { IconBadge } from '../components/Icon';
 
 const FEATURES = [
   { icon: 'shieldCheck', title: 'Kids-only titles', text: 'Only shows made for children. Everything else is blocked, even by link.' },

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
 import { useKids } from '../context/KidsContext';
 import { PinDialog, ForgotPinDialog } from '../components/PinPad';
+import Icon, { IconBadge } from '../components/Icon';
 
 const SECTIONS = [
   { id: 'all',       label: 'Everything', icon: 'star', color: '#facc15' },

@@ -3,9 +3,16 @@ package com.showminetventertainment.showminetv.downloads;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.net.Uri;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.TypedValue;
+import android.view.GestureDetector;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.OptIn;
@@ -37,6 +44,11 @@ public class OfflinePlayerActivity extends AppCompatActivity {
     private ExoPlayer player;
     private String key;
     private byte[] contentKey;
+    private PlayerView view;
+    private TextView seekLeft, seekRight;
+    private int seekTotal = 0;
+    private int seekDir = 0;
+    private long lastSeekAt = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,10 +70,18 @@ public class OfflinePlayerActivity extends AppCompatActivity {
             return;
         }
 
-        PlayerView view = new PlayerView(this);
+        view = new PlayerView(this);
         view.setBackgroundColor(Color.BLACK);
         view.setKeepContentOnPlayerReset(true);
-        setContentView(view);
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.BLACK);
+        root.addView(view, new FrameLayout.LayoutParams(-1, -1));
+        seekLeft = seekBubble(Gravity.START | Gravity.CENTER_VERTICAL);
+        seekRight = seekBubble(Gravity.END | Gravity.CENTER_VERTICAL);
+        root.addView(seekLeft);
+        root.addView(seekRight);
+        setContentView(root);
+        setupGestures();
         hideSystemBars();
 
         player = new ExoPlayer.Builder(this).build();
@@ -85,6 +105,80 @@ public class OfflinePlayerActivity extends AppCompatActivity {
         });
         player.prepare();
         player.play();
+    }
+
+    private int dp(int v) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, getResources().getDisplayMetrics());
+    }
+
+    private TextView seekBubble(int gravity) {
+        TextView t = new TextView(this);
+        t.setTextColor(Color.WHITE);
+        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
+        t.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        t.setGravity(Gravity.CENTER);
+        t.setPadding(dp(22), dp(14), dp(22), dp(14));
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0x66000000);
+        bg.setCornerRadius(dp(40));
+        t.setBackground(bg);
+        t.setAlpha(0f);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(-2, -2, gravity);
+        lp.leftMargin = dp(56); lp.rightMargin = dp(56);
+        t.setLayoutParams(lp);
+        return t;
+    }
+
+    // Double-tap left/right to jump 10s (taps keep adding while the bubble shows);
+    // double-tap in the middle plays/pauses; a single tap shows/hides the controls.
+    private void setupGestures() {
+        final GestureDetector gd = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
+            @Override public boolean onDown(MotionEvent e) { return true; }
+            @Override public boolean onSingleTapConfirmed(MotionEvent e) {
+                if (System.currentTimeMillis() - lastSeekAt < 900 && sideOf(e) == seekDir) { seekBy(seekDir); return true; }
+                if (view.isControllerFullyVisible()) view.hideController(); else view.showController();
+                return true;
+            }
+            @Override public boolean onDoubleTap(MotionEvent e) {
+                int side = sideOf(e);
+                if (side == 0) {
+                    if (player != null) { if (player.isPlaying()) player.pause(); else player.play(); }
+                    view.showController();
+                } else {
+                    seekBy(side);
+                }
+                return true;
+            }
+        });
+        view.setOnTouchListener((v, ev) -> {
+            gd.onTouchEvent(ev);
+            if (ev.getAction() == MotionEvent.ACTION_UP) v.performClick();
+            return true;
+        });
+    }
+
+    private int sideOf(MotionEvent e) {
+        float fx = e.getX() / Math.max(1, view.getWidth());
+        return fx < 0.4f ? -1 : (fx > 0.6f ? 1 : 0);
+    }
+
+    private void seekBy(int dir) {
+        if (player == null) return;
+        long now = System.currentTimeMillis();
+        if (dir != seekDir || now - lastSeekAt > 900) seekTotal = 0;
+        seekDir = dir; lastSeekAt = now; seekTotal += 10;
+        long dur = player.getDuration();
+        long target = player.getCurrentPosition() + dir * 10_000L;
+        if (dur > 0) target = Math.min(target, dur - 500);
+        player.seekTo(Math.max(0, target));
+        view.hideController();
+        TextView t = dir > 0 ? seekRight : seekLeft;
+        (dir > 0 ? seekLeft : seekRight).setAlpha(0f);
+        t.setText(dir > 0 ? ("▶▶  +" + seekTotal + "s") : ("−" + seekTotal + "s  ◀◀"));
+        t.animate().cancel();
+        t.setScaleX(0.85f); t.setScaleY(0.85f);
+        t.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(120).withEndAction(() ->
+            t.animate().alpha(0f).setStartDelay(650).setDuration(250).start()).start();
     }
 
     private void hideSystemBars() {

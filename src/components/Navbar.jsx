@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import Avatar from './Avatar';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 
@@ -58,12 +59,12 @@ export default function Navbar() {
             onClick={() => setShowMenu(!showMenu)}
             style={{
               width: 34, height: 34, borderRadius: '50%',
-              background: '#e50914', display: 'flex', alignItems: 'center',
+              display: 'flex', alignItems: 'center',
               justifyContent: 'center', fontSize: '.85rem', fontWeight: 900,
               cursor: 'pointer', flexShrink: 0, position: 'relative',
               color: '#fff', letterSpacing: '.02em'
             }}>
-            {user?.full_name?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'U'}
+            <Avatar user={user} size={34} />
 
             {/* Dropdown */}
             {showMenu && (
