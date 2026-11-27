@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
 import { account } from '../api/extras';
 import { PageHeader, Field, Button, Notice, heading } from '../components/ui';
+import { Capacitor } from '@capacitor/core';
+import { introSoundOn, setIntroSound } from '../components/LaunchIntro';
 import { biometricInfo, biometricEnabled, enableBiometric, disableBiometric, markBiometricAsked } from '../utils/biometric';
 
 const card = { background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 14, padding: 18, marginBottom: 16 };
@@ -14,6 +16,7 @@ export default function Settings() {
   const { lang, setLang, languages } = useI18n();
   const navigate = useNavigate();
 
+  const [introSound, setIntroSoundState] = useState(introSoundOn);
   const [name, setName] = useState(user?.full_name || '');
   const [profileMsg, setProfileMsg] = useState({});
   const [savingProfile, setSavingProfile] = useState(false);
@@ -87,6 +90,24 @@ export default function Settings() {
           <Field label="New password (8+ characters)" type="password" autoComplete="new-password" minLength={8} required value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} />
           <Button type="submit" variant="ghost" loading={savingPw}>Change password</Button>
         </form>
+
+        {Capacitor.isNativePlatform() && (
+          <div style={card}>
+            <h2 style={h2}>App start</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: '.92rem' }}>Intro sound</div>
+                <div style={{ color: 'rgba(255,255,255,.45)', fontSize: '.78rem', marginTop: 3, lineHeight: 1.5 }}>Play the Showmine sound with the opening animation.</div>
+              </div>
+              <button type="button" role="switch" aria-checked={introSound} onClick={() => { setIntroSound(!introSound); setIntroSoundState(!introSound); }} style={{
+                width: 50, height: 28, borderRadius: 28, border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0,
+                background: introSound ? '#e50914' : 'rgba(255,255,255,.15)', transition: 'background .2s'
+              }}>
+                <span style={{ position: 'absolute', top: 3, left: introSound ? 25 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', transition: 'left .25s cubic-bezier(.3,1.5,.5,1)' }} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {bio.available && (
           <div style={card}>

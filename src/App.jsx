@@ -19,6 +19,7 @@ import Live from './pages/Live';
 import Search from './pages/Search';
 import Profile from './pages/Profile';
 import Subscribe from './pages/Subscribe';
+import LaunchIntro from './components/LaunchIntro';
 import Watchlist from './pages/Watchlist';
 import ContinueWatching from './pages/ContinueWatching';
 import Downloads from './pages/Downloads';
@@ -84,6 +85,7 @@ export default function App() {
     <>
       <AdMobInitializer />
       <BrowserRouter>
+        <LaunchIntro />
         <DeepLinkHandler />
         <OfflineGate />
         <I18nProvider>
