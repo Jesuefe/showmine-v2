@@ -38,8 +38,10 @@ jobs:
           if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
             echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
             echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+            echo "ADMIN_VARIANT=release" >> "$GITHUB_ENV"
           else
-            echo "::error::ANDROID_KEYSTORE_BASE64 secret missing"; exit 1
+            echo "::warning::No signing secret: building a debug-signed APK (uninstall the old one before installing a new build)"
+            echo "ADMIN_VARIANT=debug" >> "$GITHUB_ENV"
           fi
       - name: Build signed APK
         working-directory: admin-app/android
@@ -49,12 +51,12 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          if [ "$ADMIN_VARIANT" = "release" ]; then ./gradlew assembleRelease --no-daemon --stacktrace; else ./gradlew assembleDebug --no-daemon --stacktrace; fi
       - name: Publish APK
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          APK=android/app/build/outputs/apk/release/app-release.apk
+          APK=android/app/build/outputs/apk/$ADMIN_VARIANT/app-$ADMIN_VARIANT.apk
           OUT="showmine-admin-${GITHUB_RUN_NUMBER}.apk"
           cp "$APK" "$OUT"
           gh release create "admin-${GITHUB_RUN_NUMBER}" "$OUT" --prerelease --target "$GITHUB_SHA" \
