@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import GetAppBanner from './GetAppBanner';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LanguageSelector from './LanguageSelector';
 import { useI18n } from '../i18n/I18nContext';
@@ -221,28 +221,54 @@ function MobileTopNav() {
   );
 }
 
+// Remembers the last tab so the indicator can glide from it to the new one
+// (Layout remounts on every route change).
+let lastTabIndex = -1;
+
 function MobileBottomNav() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const location = useLocation();
+  const idx = BOTTOM_NAV.findIndex(i => i.path === location.pathname);
+  const [pos, setPos] = useState(lastTabIndex >= 0 ? lastTabIndex : idx);
+  const changed = lastTabIndex !== idx && idx >= 0;
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setPos(idx));
+    if (idx >= 0) lastTabIndex = idx;
+    return () => cancelAnimationFrame(r);
+  }, [idx]);
+  const n = BOTTOM_NAV.length;
   return (
-    <nav style={{
+    <nav data-nopress style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, height: 64,
-      background: 'rgba(9,9,9,.97)', backdropFilter: 'blur(12px)',
+      background: 'rgba(9,9,9,.92)', backdropFilter: 'blur(16px) saturate(1.4)', WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
       borderTop: '1px solid rgba(255,255,255,.06)',
       display: 'flex', alignItems: 'center', zIndex: 1000,
       paddingBottom: 'env(safe-area-inset-bottom, 0px)'
     }}>
-      {BOTTOM_NAV.map(item => {
-        const active = location.pathname === item.path;
+      {pos >= 0 && (
+        <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, width: `${100 / n}%`, height: '100%', pointerEvents: 'none',
+          transform: `translateX(${pos * 100}%)`, transition: 'transform .42s cubic-bezier(.3, 1.35, .5, 1)' }}>
+          <div style={{ position: 'absolute', top: 0, left: '50%', width: 34, height: 3, marginLeft: -17, borderRadius: '0 0 4px 4px', background: '#e50914', boxShadow: '0 0 14px 2px rgba(229,9,20,.7)' }} />
+          <div style={{ position: 'absolute', top: 6, left: '50%', width: 56, height: 36, marginLeft: -28, borderRadius: 18, background: 'radial-gradient(closest-side, rgba(229,9,20,.22), transparent)' }} />
+        </div>
+      )}
+      {BOTTOM_NAV.map((item, i) => {
+        const active = i === idx;
+        const isProfile = item.path === '/profile';
         return (
-          <Link key={item.path} to={item.path} style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
+          <Link key={item.path} to={item.path} replace={active} style={{
+            position: 'relative', flex: 1, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             gap: 3, textDecoration: 'none', padding: '8px 0',
-            color: active ? '#e50914' : 'rgba(255,255,255,.35)',
-            transition: 'color .15s'
+            color: active ? '#fff' : 'rgba(255,255,255,.4)',
+            transition: 'color .2s'
           }}>
-            {item.icon}
+            <span style={{ display: 'flex', color: active ? '#e50914' : 'inherit', animation: active && changed ? 'smPop .45s cubic-bezier(.3,1.5,.5,1)' : 'none' }}>
+              {isProfile && user
+                ? <Avatar user={user} size={23} ring={active ? '#e50914' : 'rgba(255,255,255,.25)'} />
+                : item.icon}
+            </span>
             <span style={{ fontSize: '.58rem', fontWeight: active ? 800 : 500, letterSpacing: '.02em' }}>
               {t(item.labelKey)}
             </span>
@@ -259,6 +285,8 @@ export default function Layout({ children }) {
   const location = useLocation();
   const isHeroPage = location.pathname === '/' || location.pathname.startsWith('/watch/');
   const isFullScreen = location.pathname === '/shorts';
+  const navType = useNavigationType();
+  const tabSwitch = BOTTOM_NAV.some(i => i.path === location.pathname);
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', display: 'flex' }}>
@@ -278,7 +306,7 @@ export default function Layout({ children }) {
         {/* Mobile top nav */}
         {isMobile && !isFullScreen && !kidsMode && <MobileTopNav />}
 
-        {children}
+        <div className={`sm-page${navType === 'POP' ? ' back' : tabSwitch ? ' up' : ''}`}>{children}</div>
       </div>
 
       {/* Mobile bottom nav */}

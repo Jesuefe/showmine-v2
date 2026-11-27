@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -171,6 +172,7 @@ public class OfflinePlayerActivity extends AppCompatActivity {
         long target = player.getCurrentPosition() + dir * 10_000L;
         if (dur > 0) target = Math.min(target, dur - 500);
         player.seekTo(Math.max(0, target));
+        view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
         view.hideController();
         TextView t = dir > 0 ? seekRight : seekLeft;
         (dir > 0 ? seekLeft : seekRight).setAlpha(0f);

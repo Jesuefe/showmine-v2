@@ -10,6 +10,7 @@ import client from '../api/client';
 import { useKids } from '../context/KidsContext';
 import { EpisodeDownload } from '../components/DownloadButton';
 import { IconBadge } from '../components/Icon';
+import { tapHaptic } from '../utils/feel';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
 
@@ -397,10 +398,12 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
       tap.t = now; tap.side = zone;
       if (zone === 'middle') {
         const vid = videoRef.current;
+        tapHaptic('medium');
         if (vid) { if (vid.paused) vid.play().catch(() => {}); else vid.pause(); }
         showControlsTemp();
       } else {
         setShowControls(false);
+        tapHaptic('medium');
         seek(zone === 'forward' ? 10 : -10);
       }
       return;

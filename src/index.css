@@ -49,3 +49,58 @@ button, input, select, textarea { font-family: inherit; }
 *::-webkit-scrollbar {
   display: none;
 }
+/* ---------- Motion & touch feel ---------- */
+@keyframes smPageInFwd { from { opacity: 0; transform: translate3d(18px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes smPageInBack { from { opacity: 0; transform: translate3d(-18px, 0, 0); } to { opacity: 1; transform: none; } }
+@keyframes smPageInUp { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
+@keyframes smImgIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes smPop { 0% { transform: scale(1); } 40% { transform: scale(1.22) translateY(-2px); } 100% { transform: scale(1); } }
+@keyframes smRiseIn { from { opacity: 0; transform: translate3d(0, 14px, 0) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* fill-mode backwards: no transform remains after the animation, so fixed sheets inside pages stay fixed */
+.sm-page { animation: smPageInFwd .32s cubic-bezier(.2, .8, .2, 1) backwards; }
+.sm-page.back { animation-name: smPageInBack; }
+.sm-page.up { animation-name: smPageInUp; }
+
+img { animation: smImgIn .45s ease backwards; }
+
+/* Press feedback on everything tappable (inline transforms win, so positioned controls are untouched) */
+button, a[href], [role="button"], [data-press], [style*="cursor: pointer"] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+button:not(:disabled):active, a[href]:active, [role="button"]:active, [data-press]:active, [style*="cursor: pointer"]:active {
+  transform: scale(.955);
+  filter: brightness(1.15);
+  transition: transform .08s ease, filter .08s ease;
+}
+button, a[href], [role="button"], [data-press], [style*="cursor: pointer"] {
+  transition: transform .28s cubic-bezier(.3, 1.6, .5, 1), filter .2s ease;
+}
+[data-nopress]:active, [data-nopress] *:active { transform: none !important; filter: none !important; }
+
+/* Rows of posters: gentle snapping when you swipe */
+[style*="overflow-x: auto"] { scroll-snap-type: x proximity; scroll-padding-inline: 20px; overscroll-behavior-x: contain; }
+[style*="overflow-x: auto"] > * { scroll-snap-align: start; }
+
+/* Desktop hover: posters zoom inside their frame */
+@media (hover: hover) {
+  [style*="cursor: pointer"] img { transition: transform .45s cubic-bezier(.2, .8, .2, 1); }
+  [style*="cursor: pointer"]:hover img { transform: scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* Home rows rise in one after another, and their posters cascade in */
+.sm-row { animation: smRiseIn .55s cubic-bezier(.2, .8, .2, 1) backwards; }
+.sm-row:nth-child(2) { animation-delay: .05s; } .sm-row:nth-child(3) { animation-delay: .1s; }
+.sm-row:nth-child(4) { animation-delay: .15s; } .sm-row:nth-child(5) { animation-delay: .2s; }
+.sm-row:nth-child(6) { animation-delay: .25s; } .sm-row:nth-child(n+7) { animation-delay: .3s; }
+.sm-row [style*="overflow-x: auto"] > * { animation: smRiseIn .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+.sm-row [style*="overflow-x: auto"] > *:nth-child(2) { animation-delay: .06s; }
+.sm-row [style*="overflow-x: auto"] > *:nth-child(3) { animation-delay: .12s; }
+.sm-row [style*="overflow-x: auto"] > *:nth-child(4) { animation-delay: .18s; }
+.sm-row [style*="overflow-x: auto"] > *:nth-child(5) { animation-delay: .24s; }
+.sm-row [style*="overflow-x: auto"] > *:nth-child(n+6) { animation-delay: .3s; }

@@ -1,6 +1,7 @@
 import { useId, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
+import { successHaptic, selectHaptic } from '../utils/feel';
 
 // Generated profile pictures. Every account gets one automatically (picked from
 // its id/name), and people can choose another in Profile. Saved on the server as
@@ -254,6 +255,7 @@ export function AvatarPicker({ onClose }) {
       if (!r.data?.ok) throw new Error(r.data?.error || 'Could not save');
       const u = { ...user, avatar: r.data.avatar };
       setUser(u);
+      successHaptic();
       try { localStorage.setItem('showmine_user', JSON.stringify(u)); } catch { /* storage off */ }
       onClose();
     } catch (e) { setErr(e.message || 'Could not save. Try again.'); }
@@ -274,7 +276,7 @@ export function AvatarPicker({ onClose }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
           {AVATARS.map(a => (
-            <button key={a.id} onClick={() => setSel(a.id)} aria-label={a.label} aria-pressed={sel === a.id} style={{ padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: 18, transform: sel === a.id ? 'scale(1.04)' : 'none', transition: 'transform .15s' }}>
+            <button key={a.id} onClick={() => { setSel(a.id); selectHaptic(); }} data-nohaptic aria-label={a.label} aria-pressed={sel === a.id} style={{ padding: 0, border: 'none', background: 'none', cursor: 'pointer', borderRadius: 18, transform: sel === a.id ? 'scale(1.04)' : 'none', transition: 'transform .15s' }}>
               <AvatarArt style={a.id} size="100%" radius={16} ring={sel === a.id ? '#fff' : undefined} styleProp={{ width: '100%', height: 'auto', aspectRatio: '1/1', outline: sel === a.id ? '2px solid #e50914' : 'none', outlineOffset: 3 }} />
             </button>
           ))}
