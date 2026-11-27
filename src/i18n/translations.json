@@ -1597,6 +1597,16 @@
       "ig": "Gaa n'ihu na-ekiri",
       "am": "መመልከት ቀጥል",
       "nl": "Verder kijken"
+    },
+    "free_cinema": {
+      "en": "Free Cinema · CC",
+      "fr": "Cinéma libre · CC",
+      "es": "Cine libre · CC",
+      "pt": "Cinema livre · CC",
+      "ar": "سينما مجانية · CC",
+      "de": "Freies Kino · CC",
+      "it": "Cinema libero · CC",
+      "tr": "Ücretsiz Sinema · CC"
     }
   }
 }

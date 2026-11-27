@@ -5,6 +5,7 @@ import { useTranslatedTitles, useTranslatedMovie } from '../i18n/useTranslatedCo
 import client from '../api/client';
 import { progress as progressApi, shorts as shortsApi } from '../api/extras';
 import { useI18n } from '../i18n/I18nContext';
+import { CCMark } from './FreeCinema';
 
 function useIsMobile() {
   const checkMobile = () => {
@@ -122,6 +123,13 @@ function CategoryChips() {
   const navigate = useNavigate();
   return (
     <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '0 20px 4px', marginBottom: '1.8rem', scrollbarWidth: 'none' }}>
+      <button className="home-press" onClick={() => navigate('/cc')} style={{
+        flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, padding: '9px 15px', borderRadius: 999,
+        background: 'linear-gradient(90deg, rgba(56,189,248,.22), rgba(250,204,21,.18))', border: '1px solid rgba(56,189,248,.45)', color: '#fff',
+        fontSize: '.8rem', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
+      }}>
+        <CCMark size={15} />Free Cinema
+      </button>
       {CATEGORIES.map(c => (
         <button key={c.genre} className="home-press" onClick={() => navigate(`/browse?genre=${c.genre}`)} style={{
           flexShrink: 0, display: 'flex', alignItems: 'center', gap: 7, padding: '9px 15px', borderRadius: 999,
@@ -213,6 +221,14 @@ const HOME_CSS = `
   .home-press { transition: transform .15s ease; }
   .home-press:active { transform: scale(.96); }
 `;
+
+function CCRow() {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    client.get('/cc.php?action=rail').then(r => r.data.ok && setItems(r.data.items || [])).catch(() => {});
+  }, []);
+  return <MovieRow label="Creative Commons" title="Free Cinema · CC" movies={items} seeAllPath="/cc" />;
+}
 
 function MovieRow({ title, label, movies, seeAllPath }) {
   const navigate = useNavigate();
@@ -510,6 +526,7 @@ export default function Home() {
       <Top10Row movies={data?.trending} />
       <ShortsRow />
       <MovieRow label="No Cost"     title="Free to Watch" movies={data?.free}     seeAllPath="/browse" />
+      <CCRow />
       <MovieRow label="Just Added"  title="New Arrivals"  movies={data?.new}      seeAllPath="/browse" />
       <MovieRow label="What's Hot"  title="Trending Now"  movies={data?.trending?.slice(10)} seeAllPath="/browse" />
 

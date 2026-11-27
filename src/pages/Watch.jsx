@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { showInterstitial, isAdMobAvailable } from '../services/admob';
 import { useParams, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import Hls from 'hls.js';
 import { progress as progressApi, social } from '../api/extras';
 import { CommentSheet } from '../components/Comments';
@@ -11,6 +12,8 @@ import { useKids } from '../context/KidsContext';
 import { EpisodeDownload } from '../components/DownloadButton';
 import { IconBadge } from '../components/Icon';
 import { tapHaptic } from '../utils/feel';
+import { kidsApi, blockedReason } from '../kids/api';
+import KidsTimeGate from '../kids/KidsTimeGate';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
 
@@ -293,6 +296,28 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
     };
   }, []);
 
+  // Kids Mode screen time: count watched minutes and stop playback at the limit / bedtime.
+  const { active: kidsActive } = useKids();
+  const [kidsBlock, setKidsBlock] = useState(null);
+  useEffect(() => {
+    if (!kidsActive) return undefined;
+    let secs = 0;
+    const check = (time) => {
+      const why = blockedReason(time);
+      if (why) { videoRef.current?.pause(); setKidsBlock(why); }
+    };
+    kidsApi.home().then(r => r.ok && check(r.time)).catch(() => {});
+    const t = setInterval(() => {
+      const vid = videoRef.current;
+      if (vid && !vid.paused) secs += 5;
+      if (secs >= 60) {
+        const send = secs; secs = 0;
+        kidsApi.tick(send).then(r => r.ok && check(r.time)).catch(() => {});
+      }
+    }, 5000);
+    return () => { clearInterval(t); if (secs >= 10) kidsApi.tick(secs).catch(() => {}); };
+  }, [kidsActive]);
+
   // Resume where the viewer stopped, and save progress every 15s / on pause / on leave.
   useEffect(() => {
     const vid = videoRef.current;
@@ -473,6 +498,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
       onMouseMove={showControlsTemp}
       onClick={togglePlay}
     >
+      {kidsBlock && createPortal(<div onClick={e => e.stopPropagation()} onTouchStart={e => e.stopPropagation()} onTouchEnd={e => e.stopPropagation()}><KidsTimeGate reason={kidsBlock} onExtended={(t) => { if (!blockedReason(t)) { setKidsBlock(null); setTimeout(() => videoRef.current?.play().catch(() => {}), 300); } }} /></div>, document.body)}
       <video
         ref={videoRef}
         playsInline

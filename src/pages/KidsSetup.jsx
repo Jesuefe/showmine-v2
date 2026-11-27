@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useKids } from '../context/KidsContext';
 import { PinPad } from '../components/PinPad';
 import { IconBadge } from '../components/Icon';
+import KidProfileForm from '../kids/KidProfileForm';
+import { kidsApi } from '../kids/api';
 
 const FEATURES = [
   { icon: 'shieldCheck', title: 'Kids-only titles', text: 'Only shows made for children. Everything else is blocked, even by link.' },
@@ -24,10 +26,10 @@ const ghostBtn = {
 };
 
 function Steps({ step }) {
-  const idx = { intro: 0, pin: 1, confirm: 2 }[step] ?? 0;
+  const idx = { intro: 0, child: 1, pin: 2, confirm: 3 }[step] ?? 0;
   return (
     <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: '1.4rem' }}>
-      {[0, 1, 2].map(i => (
+      {[0, 1, 2, 3].map(i => (
         <div key={i} style={{ width: i === idx ? 26 : 8, height: 8, borderRadius: 4, background: i <= idx ? '#e50914' : 'rgba(255,255,255,.15)', transition: 'all .3s' }} />
       ))}
     </div>
@@ -45,6 +47,27 @@ export default function KidsSetup() {
   const [busy, setBusy] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const justReset = location.state?.reset;
+  const [child, setChild] = useState({ child_name: '', avatar: 'lion', age_band: '5-7', daily_limit_mins: 60, bedtime_start: '', bedtime_end: '' });
+  const [usePinAfter, setUsePinAfter] = useState(false); // existing PIN → skip PIN steps after the child step
+
+  // Load any saved child profile so returning parents start from it.
+  useEffect(() => {
+    kidsApi.home().then(r => { if (r.ok && r.profile) setChild(c => ({ ...c, ...r.profile })); }).catch(() => {});
+  }, []);
+
+  const saveChild = async () => {
+    setBusy(true); setError('');
+    try {
+      const r = await kidsApi.saveProfile(child);
+      if (!r.ok) { setError(r.error || 'Could not save the profile'); return; }
+      if (usePinAfter) { setBusy(false); turnOn(); return; }
+      setStep('pin');
+    } catch {
+      setError('No connection. Try again.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => { refresh(); }, [refresh]);
   useEffect(() => { if (active) navigate('/kids', { replace: true }); }, [active, navigate]);
@@ -84,7 +107,7 @@ export default function KidsSetup() {
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', padding: '16px 20px 60px' }}>
-      <button onClick={() => step === 'intro' ? navigate(-1) : (setStep(step === 'confirm' ? 'pin' : 'intro'), setError(''))}
+      <button onClick={() => step === 'intro' ? navigate(-1) : (setStep({ confirm: 'pin', pin: 'child', child: 'intro' }[step] || 'intro'), setError(''))}
         style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: '.88rem', padding: '6px 0', marginBottom: '1rem' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="15 18 9 12 15 6"/></svg>
         Back
@@ -152,17 +175,29 @@ export default function KidsSetup() {
               </div>
             ) : hasPin ? (
               <>
-                <button style={{ ...primaryBtn, opacity: busy ? .6 : 1 }} disabled={busy} onClick={() => turnOn()}>
+                <button style={{ ...primaryBtn, opacity: busy ? .6 : 1 }} disabled={busy} onClick={() => { setError(''); setUsePinAfter(true); setStep('child'); }}>
                   {busy ? 'Turning on…' : 'Turn on Kids Mode'}
                 </button>
-                <button style={{ ...ghostBtn, marginTop: 10 }} onClick={() => { setError(''); setStep('pin'); }}>Change PIN</button>
+                <button style={{ ...ghostBtn, marginTop: 10 }} onClick={() => { setError(''); setUsePinAfter(false); setStep('child'); }}>Change PIN</button>
                 <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', textAlign: 'center', marginTop: 12 }}>Uses the PIN you already set.</p>
               </>
             ) : (
-              <button style={primaryBtn} onClick={() => { setError(''); setStep('pin'); }}>Set up a PIN</button>
+              <button style={primaryBtn} onClick={() => { setError(''); setUsePinAfter(false); setStep('child'); }}>Get started</button>
             )}
             {planOk === true && <p style={{ fontSize: '.72rem', color: 'rgba(255,255,255,.35)', textAlign: 'center', marginTop: 12 }}>Included with your plan</p>}
           </>
+        )}
+
+        {step === 'child' && (
+          <div style={{ borderRadius: 22, padding: '22px 18px', background: 'radial-gradient(400px 200px at 0% 0%, #3b1d6e, transparent 70%), radial-gradient(400px 200px at 100% 100%, #0e4a6b, transparent 70%), #0b1026', border: '1px solid rgba(255,255,255,.08)' }}>
+            <h2 style={{ ...H, fontSize: '1.6rem', margin: '0 0 .2rem', textAlign: 'center' }}>Who’s watching?</h2>
+            <p style={{ fontSize: '.8rem', color: 'rgba(255,255,255,.55)', margin: '0 0 1rem', textAlign: 'center' }}>Set up your child’s space and screen-time rules. You can change these any time.</p>
+            <KidProfileForm value={child} onChange={setChild} />
+            {error && <p style={{ color: '#ff8080', fontSize: '.8rem', margin: '12px 0 0' }}>{error}</p>}
+            <button style={{ ...primaryBtn, marginTop: 20, opacity: busy ? .6 : 1 }} disabled={busy} onClick={saveChild}>
+              {busy ? 'Saving…' : usePinAfter ? 'Turn on Kids Mode' : 'Next: set a PIN'}
+            </button>
+          </div>
         )}
 
         {(step === 'pin' || step === 'confirm') && (

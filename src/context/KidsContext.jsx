@@ -77,7 +77,7 @@ export function KidsProvider({ children }) {
 
 export const useKids = () => useContext(KidsContext) || { active: false };
 
-// Keeps a child inside Kids Mode: every route except /kids and /watch/* bounces back,
+// Keeps a child inside Kids Mode: every route outside /kids, /kids/* and /watch/* bounces back,
 // and the Android back button can't leave the Kids area or close the app.
 export function KidsGuard() {
   const { active } = useKids();
@@ -88,7 +88,7 @@ export function KidsGuard() {
   useEffect(() => {
     if (!active || !user) return;
     const p = location.pathname;
-    if (p === '/kids' || p.startsWith('/watch/')) return;
+    if (p === '/kids' || p.startsWith('/kids/') || p.startsWith('/watch/')) return;
     navigate('/kids', { replace: true });
   }, [active, user, location.pathname, navigate]);
 
@@ -97,7 +97,8 @@ export function KidsGuard() {
     let handle;
     import('@capacitor/app').then(({ App }) => {
       handle = App.addListener('backButton', () => {
-        if (window.location.pathname.startsWith('/watch/')) navigate('/kids', { replace: true });
+        const path = window.location.pathname;
+        if (path.startsWith('/watch/') || path.startsWith('/kids/')) navigate('/kids', { replace: true });
         // On /kids itself: swallow the press so the app doesn't close.
       });
     }).catch(() => {});

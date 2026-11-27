@@ -66,7 +66,6 @@ export default function Live() {
     const p = new URLSearchParams(searchParams);
     p.set('id', stream.id);
     setSearchParams(p);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const filtered = cat === 'all' ? streams : streams.filter(s => s.category === cat);
@@ -79,14 +78,15 @@ export default function Live() {
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', paddingBottom: '5rem' }}>
-            <div style={{ paddingTop: 60 }}>
+            <div className="live-top">
         <div style={{ display: 'flex', gap: 0, maxWidth: 1400, margin: '0 auto' }}>
 
           {/*  MAIN CONTENT  */}
           <div style={{ flex: 1, minWidth: 0 }}>
 
-            {/* Player */}
-            <div style={{
+            {/* Player + channel info stay pinned while the channel list scrolls underneath */}
+            <div className="live-sticky">
+            <div className="live-player" style={{
               position: 'relative', width: '100%',
               aspectRatio: '16/9', background: '#000', overflow: 'hidden'
             }}>
@@ -197,6 +197,8 @@ export default function Live() {
               </div>
             )}
 
+            </div>
+
             {/* Mobile channel list */}
             <div style={{ padding: '8px 0' }}>
               {/* Category filter */}
@@ -282,6 +284,14 @@ export default function Live() {
       </div>
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        .live-top { padding-top: 60px; }
+        .live-sticky { position: sticky; top: 0; z-index: 30; background: #000; box-shadow: 0 10px 24px rgba(0,0,0,.6); }
+        .live-player { max-width: min(100%, calc((100vh - 280px) * 16 / 9)); margin: 0 auto; }
+        @media (max-width: 1023px), (pointer: coarse) {
+          .live-top { padding-top: 0; }
+          .live-sticky { top: 60px; }
+          .live-player { max-width: 100%; }
+        }
         @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
       `}</style>
     </div>

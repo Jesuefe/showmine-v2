@@ -29,6 +29,7 @@ const MAIN_NAV = [
   { path: '/', labelKey: 'home', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
   { path: '/browse', labelKey: 'browse', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
   { path: '/live', labelKey: 'live_tv', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48 0a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"/></svg> },
+  { path: '/cc', labelKey: 'free_cinema', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9.5"/><path d="M10.5 9.8a3 3 0 100 4.4M17 9.8a3 3 0 100 4.4"/></svg> },
   { path: '/watchlist', labelKey: 'my_list', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg> },
   { path: '/search', labelKey: 'search', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> },
 ];
@@ -299,7 +300,7 @@ export default function Layout({ children }) {
         flex: 1,
         marginLeft: isMobile || kidsMode ? 0 : 220,
         minWidth: 0,
-        overflowX: 'hidden',
+        overflowX: 'clip', // 'clip' (not 'hidden') so position:sticky works inside pages
         paddingTop: isMobile && !isHeroPage && !isFullScreen && !kidsMode ? 60 : 0,
         paddingBottom: kidsMode ? 0 : isMobile ? 64 : 40,
       }}>

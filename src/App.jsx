@@ -32,6 +32,10 @@ import Kids from './pages/Kids';
 import DataUsage from './pages/DataUsage';
 import Sessions from './pages/Sessions';
 import KidsSetup from './pages/KidsSetup';
+import ParentZone from './kids/ParentZone';
+import FreeCinema from './pages/FreeCinema';
+import PlayLearn from './kids/PlayLearn';
+import { KidsCategory, KidsSearch } from './kids/KidsBrowse';
 import TVLogin from './pages/TVLogin';
 import ScanLogin from './pages/ScanLogin';
 import Continue from './pages/Continue';
@@ -108,6 +112,7 @@ export default function App() {
               <Route path="/browse"           element={<PL><Browse /></PL>} />
               <Route path="/watch/:slug"      element={<PL><Watch /></PL>} />
               <Route path="/live"             element={<PL><Live /></PL>} />
+              <Route path="/cc"               element={<PL><FreeCinema /></PL>} />
               <Route path="/search"           element={<PL><Search /></PL>} />
               <Route path="/profile"          element={<PL><Profile /></PL>} />
               <Route path="/subscribe"        element={<PL><Subscribe /></PL>} />
@@ -123,6 +128,10 @@ export default function App() {
               <Route path="/data-usage"       element={<PL><DataUsage /></PL>} />
               <Route path="/kids"             element={<PL><Kids /></PL>} />
               <Route path="/kids-setup"       element={<PL><KidsSetup /></PL>} />
+              <Route path="/kids/c/:cat"      element={<PL><KidsCategory /></PL>} />
+              <Route path="/kids/search"      element={<PL><KidsSearch /></PL>} />
+              <Route path="/kids/play"        element={<PL><PlayLearn /></PL>} />
+              <Route path="/kids/parents"     element={<PL><ParentZone /></PL>} />
               <Route path="/terms"            element={<Terms />} />
               <Route path="/privacy"          element={<Privacy />} />
               <Route path="*"                 element={<NotFound />} />
