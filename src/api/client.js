@@ -17,6 +17,11 @@ client.interceptors.request.use((config) => {
   if (token && config.headers['X-Auth-Token'] === undefined) {
     config.headers['X-Auth-Token'] = token;
   }
+  // Active viewer profile ("Who's watching?"); 0/absent = the account's main profile.
+  const pid = localStorage.getItem('showmine_profile');
+  if (pid && pid !== '0' && config.params?._pid === undefined) {
+    config.params = { ...(config.params || {}), _pid: pid };
+  }
   return config;
 });
 

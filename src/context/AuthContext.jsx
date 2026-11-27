@@ -84,6 +84,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('showmine_profile');
+    try { sessionStorage.removeItem('showmine_profile_picked'); } catch { /* ignore */ }
     window.location.href = '/login';
   };
 

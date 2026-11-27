@@ -6,6 +6,7 @@ import client from '../api/client';
 import { progress as progressApi, shorts as shortsApi } from '../api/extras';
 import { useI18n } from '../i18n/I18nContext';
 import { CCMark } from './FreeCinema';
+import { useProfiles } from '../context/ProfileContext';
 
 function useIsMobile() {
   const checkMobile = () => {
@@ -221,6 +222,22 @@ const HOME_CSS = `
   .home-press { transition: transform .15s ease; }
   .home-press:active { transform: scale(.96); }
 `;
+
+function ForYouRows() {
+  const { current } = useProfiles();
+  const [rec, setRec] = useState(null);
+  useEffect(() => {
+    client.get('/movies.php?action=recommend').then(r => r.data.ok && setRec(r.data)).catch(() => {});
+  }, [current?.id]);
+  if (!rec) return null;
+  const who = current?.name;
+  return (
+    <>
+      <MovieRow label={rec.personal ? 'Picked for you' : 'Start here'} title={rec.personal ? (who ? `Top Picks for ${who}` : 'Top Picks for You') : 'Popular on Showmine'} movies={rec.picks} />
+      {rec.because && <MovieRow label="More like this" title={`Because you watched ${rec.because.title}`} movies={rec.because.items} />}
+    </>
+  );
+}
 
 function CCRow() {
   const [items, setItems] = useState([]);
@@ -523,6 +540,7 @@ export default function Home() {
       <CategoryChips />
 
       <ContinueRow />
+      <ForYouRows />
       <Top10Row movies={data?.trending} />
       <ShortsRow />
       <MovieRow label="No Cost"     title="Free to Watch" movies={data?.free}     seeAllPath="/browse" />

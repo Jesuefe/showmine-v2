@@ -5,6 +5,8 @@ import { initPushNotifications } from './services/notifications';
 import { registerDevice } from './services/device';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { KidsProvider, KidsGuard } from './context/KidsContext';
+import { ProfileProvider, ProfileGate } from './context/ProfileContext';
+import Profiles from './pages/Profiles';
 import { SupportProvider } from './context/SupportContext';
 import { SupportList, SupportThread } from './pages/Support';
 import { I18nProvider } from './i18n/I18nContext';
@@ -95,15 +97,18 @@ export default function App() {
         <I18nProvider>
           <AuthProvider>
            <KidsProvider>
+           <ProfileProvider>
            <SupportProvider>
             <PushNotificationInitializer />
             <KidsGuard />
+            <ProfileGate />
             <Routes>
               <Route path="/login"            element={<Login />} />
               <Route path="/register"         element={<Register />} />
               <Route path="/onboarding"       element={<Onboarding />} />
               <Route path="/forgot-password"  element={<ForgotPassword />} />
               <Route path="/delete-account"   element={<DeleteAccount />} />
+              <Route path="/profiles"         element={<ProtectedRoute><Profiles /></ProtectedRoute>} />
               <Route path="/settings"         element={<PL><Settings /></PL>} />
               <Route path="/support"          element={<PL><SupportList /></PL>} />
               <Route path="/support/:id"      element={<PL><SupportThread /></PL>} />
@@ -137,6 +142,7 @@ export default function App() {
               <Route path="*"                 element={<NotFound />} />
             </Routes>
            </SupportProvider>
+           </ProfileProvider>
            </KidsProvider>
           </AuthProvider>
         </I18nProvider>

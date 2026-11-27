@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Icon, { IconBadge } from '../components/Icon';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import client from '../api/client';
+import { FilterSheet, EMPTY_FILTERS, activeCount, filterQuery, yearLabel } from '../components/SearchFilters';
 
 const COND = "'Barlow Condensed', sans-serif";
 const RECENT_KEY = 'sm_recent_searches';
@@ -44,6 +45,9 @@ export default function Search() {
   const [searched, setSearched] = useState(false);
   const [recent, setRecent] = useState(readRecent);
   const [trending, setTrending] = useState([]);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const nFilters = activeCount(filters);
   const inputRef = useRef(null);
 
   useEffect(() => { if (!params.get('q')) inputRef.current?.focus(); }, [params]);
@@ -54,21 +58,21 @@ export default function Search() {
 
   useEffect(() => {
     const term = q.trim();
-    if (!term) return undefined;
+    if (!term && !nFilters) return undefined;
     let alive = true;
     const t = setTimeout(() => {
       setLoading(true);
-      client.get(`/movies.php?action=browse&q=${encodeURIComponent(term)}${type ? `&type=${type}` : ''}`)
+      client.get(`/movies.php?action=browse&q=${encodeURIComponent(term)}${type ? `&type=${type}` : ''}${filterQuery(filters)}`)
         .then(res => { if (alive && res.data.ok) setResults(res.data.movies || []); })
         .catch(() => {})
         .finally(() => { if (alive) { setLoading(false); setSearched(true); } });
     }, 350);
     return () => { alive = false; clearTimeout(t); };
-  }, [q, type]);
+  }, [q, type, filters, nFilters]);
 
   const onChange = (v) => {
     setQ(v);
-    if (!v.trim()) { setResults([]); setSearched(false); }
+    if (!v.trim() && !nFilters) { setResults([]); setSearched(false); }
     setParams(v ? { q: v } : {}, { replace: true });
   };
 
@@ -78,7 +82,7 @@ export default function Search() {
     navigate(`/watch/${m.slug}`);
   };
 
-  const showDiscover = !q.trim();
+  const showDiscover = !q.trim() && !nFilters;
 
   return (
     <div style={{ background: '#000', minHeight: '100vh', padding: '16px 16px 40px' }}>
@@ -93,8 +97,22 @@ export default function Search() {
             style={{ width: '100%', boxSizing: 'border-box', padding: '15px 44px 15px 48px', background: '#16161a', border: '1px solid rgba(255,255,255,.1)', borderRadius: 14, color: '#fff', fontSize: '1rem', outline: 'none', fontFamily: 'inherit' }} />
           {q && <button onClick={() => onChange('')} aria-label="Clear" style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="x" size={14} /></button>}
         </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          <button onClick={() => setFiltersOpen(true)} aria-label="Filters" style={{
+            display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, padding: '7px 12px', borderRadius: 999, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
+            background: nFilters ? '#e50914' : 'rgba(255,255,255,.07)', color: '#fff', border: `1px solid ${nFilters ? '#e50914' : 'rgba(255,255,255,.12)'}`,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
+            Filters{nFilters ? ` · ${nFilters}` : ''}
+          </button>
+          {Object.entries(filters).filter(([, v]) => v).map(([k, v]) => (
+            <button key={k} onClick={() => setFilters(f => ({ ...f, [k]: '' }))} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 999, fontSize: '.76rem', fontWeight: 700, cursor: 'pointer', background: 'rgba(229,9,20,.12)', color: '#fff', border: '1px solid rgba(229,9,20,.35)' }}>
+              {k === 'year' ? yearLabel(v) : k === 'sort' ? ({ newest: 'Newest', added: 'Recently added', az: 'A–Z' }[v] || v) : v}<Icon name="x" size={11} />
+            </button>
+          ))}
+        </div>
         {!showDiscover && (
-          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             {TYPES.map(t => (
               <button key={t.id} onClick={() => setType(t.id)} style={{
                 padding: '7px 14px', borderRadius: 999, fontSize: '.78rem', fontWeight: 700, cursor: 'pointer',
@@ -162,7 +180,7 @@ export default function Search() {
       ) : searched && results.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
           <IconBadge name="search" size={60} color="#9ca3af" style={{ margin: '0 auto 12px' }} />
-          <div style={{ fontFamily: COND, fontSize: '1.3rem', fontWeight: 800 }}>No results for “{q}”</div>
+          <div style={{ fontFamily: COND, fontSize: '1.3rem', fontWeight: 800 }}>{q.trim() ? `No results for “${q}”` : 'Nothing matches these filters'}</div>
           <div style={{ fontSize: '.84rem', color: 'rgba(255,255,255,.5)', margin: '6px 0 18px' }}>Check the spelling, or try an actor, genre or language.</div>
           <button onClick={() => navigate('/browse')} style={{ background: '#e50914', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 20px', fontWeight: 800, cursor: 'pointer' }}>Browse all titles</button>
         </div>
@@ -174,6 +192,7 @@ export default function Search() {
           </div>
         </>
       )}
+      <FilterSheet open={filtersOpen} value={filters} onApply={setFilters} onClose={() => setFiltersOpen(false)} />
       <style>{`
         .sr-press{transition:transform .12s}.sr-press:active{transform:scale(.97)}
         @keyframes srSh{0%{background-position:-300px 0}100%{background-position:300px 0}}

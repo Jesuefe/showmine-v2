@@ -14,6 +14,7 @@ import { IconBadge } from '../components/Icon';
 import { tapHaptic } from '../utils/feel';
 import { kidsApi, blockedReason } from '../kids/api';
 import KidsTimeGate from '../kids/KidsTimeGate';
+import { useSubtitles, PlayerSettings, SkipIntro, NextEpisodeCard, pipSupported, togglePiP, EXTRAS_CSS } from '../components/PlayerExtras';
 
 const API_BASE = 'https://v2.showmine.ng/api/v2';
 
@@ -117,7 +118,7 @@ const PLAYER_CSS = `@keyframes spin{to{transform:rotate(360deg)}}
 @keyframes smChev{0%{opacity:.15}50%{opacity:1}100%{opacity:.15}}
 @keyframes smFade{0%,70%{opacity:1}100%{opacity:0}}`;
 
-function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, backdrop }) {
+function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, backdrop, intro, creditsStart, nextEpisode, onNext }) {
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
   const containerRef = useRef(null);
@@ -145,6 +146,14 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
   const [showQuality, setShowQuality] = useState(false);
   const [levels, setLevels] = useState([]);
   const [error, setError] = useState('');
+  const [speed, setSpeed] = useState(1);
+  const speedRef = useRef(1);
+  const subs = useSubtitles(videoRef, movieId, episodeId);
+  const [nextCancelled, setNextCancelled] = useState(false);
+  const [countdown, setCountdown] = useState(null);
+  const onNextRef = useRef(onNext);
+  onNextRef.current = onNext;
+  const changeSpeed = (s) => { speedRef.current = s; setSpeed(s); if (videoRef.current) videoRef.current.playbackRate = s; };
 
   // Boot player
   useEffect(() => {
@@ -277,7 +286,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
     const onTime = () => setCurrentTime(vid.currentTime);
-    const onMeta = () => { setDuration(vid.duration); setLoading(false); };
+    const onMeta = () => { setDuration(vid.duration); setLoading(false); vid.playbackRate = speedRef.current; };
     const onWait = () => setLoading(true);
     const onCanPlay = () => setLoading(false);
     vid.addEventListener('play', onPlay);
@@ -295,6 +304,37 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
       vid.removeEventListener('canplay', onCanPlay);
     };
   }, []);
+
+  // Intro / next-episode markers
+  const introStart = intro?.start ?? 0;
+  const introEnd = intro?.end ?? 0;
+  const showSkipIntro = introEnd > 0 && currentTime >= introStart && currentTime < introEnd - 1;
+  const nextAt = creditsStart > 0 ? creditsStart : (duration > 120 ? duration - 15 : Infinity);
+  const inNextZone = !!nextEpisode && !nextCancelled && duration > 0 && currentTime >= nextAt;
+
+  useEffect(() => { setNextCancelled(false); setCountdown(null); }, [episodeId]);
+
+  useEffect(() => {
+    if (!inNextZone) { setCountdown(null); return; }
+    setCountdown(c => (c == null ? 10 : c));
+    const t = setInterval(() => {
+      if (videoRef.current?.paused) return;
+      setCountdown(c => (c == null ? 10 : Math.max(0, c - 0.25)));
+    }, 250);
+    return () => clearInterval(t);
+  }, [inNextZone]);
+
+  useEffect(() => {
+    if (countdown === 0) { setCountdown(null); onNextRef.current?.(); }
+  }, [countdown]);
+
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    const onEnd = () => { if (nextEpisode && !nextCancelled) onNextRef.current?.(); };
+    vid.addEventListener('ended', onEnd);
+    return () => vid.removeEventListener('ended', onEnd);
+  }, [nextEpisode, nextCancelled]);
 
   // Kids Mode screen time: count watched minutes and stop playback at the limit / bedtime.
   const { active: kidsActive } = useKids();
@@ -517,6 +557,12 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
       )}
 
       {skip && <SeekRipple side={skip.side} amount={skip.amount} k={skip.k} />}
+      {showSkipIntro && !kidsBlock && <SkipIntro raised={showControls} onSkip={() => { const v = videoRef.current; if (v) v.currentTime = introEnd; }} />}
+      {countdown != null && nextEpisode && (
+        <NextEpisodeCard next={nextEpisode} seconds={countdown} total={10} raised={showControls}
+          onPlay={() => { setCountdown(null); onNext?.(); }}
+          onCancel={() => { setNextCancelled(true); setCountdown(null); }} />
+      )}
 
       {showVolume && (
         <div style={{ position: 'absolute', right: '10%', top: '50%', transform: 'translateY(-50%)', zIndex: 6, background: 'rgba(0,0,0,.6)', borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -609,6 +655,17 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
                   {(sessionDataUsed / (1024*1024)).toFixed(1)} MB
                 </div>
               )}
+              {nextEpisode && (
+                <button aria-label="Next episode" onClick={() => onNext?.()} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20"/><rect x="17" y="4" width="2.5" height="16"/></svg>
+                </button>
+              )}
+              <PlayerSettings speed={speed} onSpeed={changeSpeed} subs={subs} />
+              {pipSupported() && (
+                <button aria-label="Picture in picture" onClick={() => togglePiP(videoRef.current)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="8" height="6" rx="1" fill="currentColor"/></svg>
+                </button>
+              )}
               {levels.length > 0 && (
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => setShowQuality(q => !q)} style={{ background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', color: '#fff', cursor: 'pointer', borderRadius: 6, padding: '3px 8px', fontSize: '.7rem', fontWeight: 700, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '.04em' }}>{quality}</button>
@@ -633,7 +690,7 @@ function ShowminePlayer({ url, streamType, title, onBack, movieId, episodeId, ba
         </div>
       </div>
 
-      <style>{PLAYER_CSS}</style>
+      <style>{PLAYER_CSS + EXTRAS_CSS}</style>
     </div>
   );
 }
@@ -806,6 +863,20 @@ export default function Watch() {
   const seasonEpisodes = (data.episodes || [])
     .filter(ep => (Number(ep.season_number) || 1) === currentSeason)
     .sort((a, b) => (Number(a.episode_number) || 0) - (Number(b.episode_number) || 0));
+  const allEps = [...(data.episodes || [])].sort((a, b) =>
+    ((Number(a.season_number) || 1) - (Number(b.season_number) || 1)) || ((Number(a.episode_number) || 0) - (Number(b.episode_number) || 0)));
+  const epUrlOf = (ep) => ep && (ep.stream_720p || ep.stream_480p || ep.stream_360p || ep.stream_1080p);
+  const curIdx = episodeId ? allEps.findIndex(e => e.id === episodeId) : (allEps.length && !episodeUrl ? 0 : -1);
+  const curEp = curIdx >= 0 ? allEps[curIdx] : null;
+  const nextEp = curIdx >= 0 ? allEps.slice(curIdx + 1).find(e => epUrlOf(e)) || null : null;
+  const playEpisode = (ep) => {
+    const u = epUrlOf(ep);
+    if (!u) return;
+    setEpisodeUrl(u); setEpisodeId(ep.id); setSeason(Number(ep.season_number) || 1); setPlaying(true);
+  };
+  const markers = curEp
+    ? { intro: { start: curEp.intro_start, end: curEp.intro_end }, credits: curEp.credits_start }
+    : { intro: { start: movie.intro_start, end: movie.intro_end }, credits: movie.credits_start };
   const ytId = stream_type === 'youtube' ? getYouTubeId(play_url) : '';
   const handlePlay = () => {
     const startPlay = () => { setPlaying(true); if (ad) setShowAd(true); };
@@ -853,6 +924,10 @@ export default function Watch() {
           movieId={movie.id}
           episodeId={episodeId}
           backdrop={movie.banner_image || movie.cover_image}
+          intro={markers.intro}
+          creditsStart={markers.credits || 0}
+          nextEpisode={nextEp}
+          onNext={nextEp ? () => playEpisode(nextEp) : undefined}
         />
       )}
 

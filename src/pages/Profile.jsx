@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import SvgIcon from '../components/Icon';
 import Avatar, { AvatarPicker } from '../components/Avatar';
+import { useProfiles, profileAvatarUser } from '../context/ProfileContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useI18n } from '../i18n/I18nContext';
@@ -66,6 +67,37 @@ function daysLeft(date) {
   return Number.isFinite(d) ? d : null;
 }
 
+function ProfilesStrip() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { profiles, currentId, select } = useProfiles();
+  if (!profiles) return null;
+  return (
+    <div style={{ background: '#101013', border: '1px solid rgba(255,255,255,.06)', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <span style={{ fontSize: '.68rem', fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,.45)' }}>Profiles</span>
+        <button onClick={() => navigate('/profiles', { state: { manage: true } })} style={{ background: 'none', border: 'none', color: '#e50914', fontSize: '.75rem', fontWeight: 800, cursor: 'pointer' }}>Manage</button>
+      </div>
+      <div style={{ display: 'flex', gap: 14, overflowX: 'auto', scrollbarWidth: 'none' }}>
+        {profiles.map(p => (
+          <button key={p.id} onClick={() => { if (p.id !== currentId) { select(p.id); window.location.reload(); } }} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, width: 58 }}>
+            <Avatar user={profileAvatarUser(p, user)} size={50} radius={14} style={{ boxShadow: p.id === currentId ? '0 0 0 2px #fff' : 'none', opacity: p.id === currentId ? 1 : .7 }} />
+            <span style={{ fontSize: '.7rem', fontWeight: p.id === currentId ? 800 : 600, color: p.id === currentId ? '#fff' : 'rgba(255,255,255,.55)', maxWidth: 58, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+          </button>
+        ))}
+        {profiles.length < 5 && (
+          <button onClick={() => navigate('/profiles', { state: { manage: false } })} aria-label="Add profile" style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, width: 58 }}>
+            <div style={{ width: 50, height: 50, borderRadius: 14, border: '2px dashed rgba(255,255,255,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.7)" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <span style={{ fontSize: '.7rem', color: 'rgba(255,255,255,.55)' }}>Add</span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Profile() {
   const { t } = useI18n();
   const { user, logout } = useAuth();
@@ -124,6 +156,7 @@ export default function Profile() {
       </div>
 
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 16px' }}>
+        <ProfilesStrip />
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 16 }}>
           {[

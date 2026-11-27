@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
 import { useI18n } from '../i18n/I18nContext';
+import PromoCode from '../components/PromoCode';
 
 export default function Subscribe() {
   const { t } = useI18n();
@@ -112,6 +113,8 @@ function WebSubscribe({ user, t, navigate }) {
           <h1 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2rem', fontWeight: 900, marginBottom: '.5rem' }}>{t('choose_plan')}</h1>
           <p style={{ color: 'rgba(255,255,255,.4)', fontSize: '.88rem' }}>{t('unlock_unlimited')}</p>
         </div>
+
+        <PromoCode />
 
         {/* Plan cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12, marginBottom: '2rem' }}>
