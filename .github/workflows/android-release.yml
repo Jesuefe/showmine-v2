@@ -5,6 +5,7 @@ on:
   push:
     branches: [main, play-update-v1.2]
     tags: ['v*']
+    paths-ignore: ['admin-app/**', '.github/workflows/admin-release.yml']
 
 permissions:
   contents: write   # to publish the test APK as a pre-release

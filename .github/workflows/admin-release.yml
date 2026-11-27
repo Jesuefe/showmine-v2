@@ -1,0 +1,62 @@
+name: Showmine Admin (APK)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, play-update-v1.2]
+    paths: ['admin-app/**', '.github/workflows/admin-release.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: admin-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin-app/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - run: npm run build
+      - run: npx cap sync android
+      - name: Decode upload keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+            echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+          else
+            echo "::error::ANDROID_KEYSTORE_BASE64 secret missing"; exit 1
+          fi
+      - name: Build signed APK
+        working-directory: admin-app/android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: Publish APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          OUT="showmine-admin-${GITHUB_RUN_NUMBER}.apk"
+          cp "$APK" "$OUT"
+          gh release create "admin-${GITHUB_RUN_NUMBER}" "$OUT" --prerelease --target "$GITHUB_SHA" \
+            --title "Showmine Admin ${GITHUB_RUN_NUMBER}" \
+            --notes "Showmine Admin app (ng.showmine.admin) from ${GITHUB_SHA::7}. Internal use only — not for Play."

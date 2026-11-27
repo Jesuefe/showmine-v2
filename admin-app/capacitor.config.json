@@ -1,0 +1,11 @@
+{
+  "appId": "ng.showmine.admin",
+  "appName": "Showmine Admin",
+  "webDir": "dist",
+  "backgroundColor": "#0b0b0d",
+  "android": { "backgroundColor": "#0b0b0d", "allowMixedContent": false, "webContentsDebuggingEnabled": false },
+  "server": { "androidScheme": "https" },
+  "plugins": {
+    "SplashScreen": { "launchShowDuration": 900, "launchAutoHide": true, "backgroundColor": "#0b0b0d", "showSpinner": false }
+  }
+}
