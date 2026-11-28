@@ -95,7 +95,8 @@ jobs:
         run: |
           TAG="test-${GITHUB_RUN_NUMBER}"
           cp android/app/build/outputs/apk/debug/app-debug.apk "showmine-tv-test-${GITHUB_RUN_NUMBER}.apk"
-          gh release create "$TAG" "showmine-tv-test-${GITHUB_RUN_NUMBER}.apk" \
+          cp android/app/build/outputs/bundle/release/app-release.aab "showmine-tv-play-${GITHUB_RUN_NUMBER}.aab"
+          gh release create "$TAG" "showmine-tv-test-${GITHUB_RUN_NUMBER}.apk" "showmine-tv-play-${GITHUB_RUN_NUMBER}.aab" \
             --prerelease --target "$GITHUB_SHA" \
             --title "Test build ${GITHUB_RUN_NUMBER} (${GITHUB_REF_NAME})" \
             --notes "Test APK from ${GITHUB_SHA::7}. Installs as 'Showmine TV' next to the Play Store app (package com.showminetventertainment.showminetv.test). Not for Play upload."

@@ -4,9 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
 import { useI18n } from '../i18n/I18nContext';
 import LanguageSelector from '../components/LanguageSelector';
-import { biometricInfo, biometricEnabled, biometricName, biometricAsked, markBiometricAsked, enableBiometric, signInWithBiometric } from '../utils/biometric';
 
-const FP_ICON = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 11c0 3-1 6-3 8"/><path d="M8.5 7.5A5 5 0 0 1 17 11c0 2-.3 4-1 5.8"/><path d="M5.6 9A7.9 7.9 0 0 1 12 4a8 8 0 0 1 8 8c0 1-.1 2-.3 3"/><path d="M4 13.5c0 1.5.3 3 .9 4.3"/><path d="M12 15c-.4 2-1.2 3.8-2.4 5.3"/><path d="M14.6 13.6c-.1 2.8-.8 5.3-2 7.2"/></svg>;
 
 function useIsMobile() {
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -47,39 +45,7 @@ export default function Login() {
 
   const handle = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Fingerprint / face / passcode sign-in (app only)
-  const [bio, setBio] = useState({ available: false });
-  const [bioBusy, setBioBusy] = useState(false);
-  const [bioOffer, setBioOffer] = useState(null); // signed-in user waiting on "turn on?" answer
-  useEffect(() => { biometricInfo().then(setBio); }, []);
-  const canQuick = bio.available && biometricEnabled();
-
-  const quickSignIn = async () => {
-    if (bioBusy) return;
-    setError(''); setBioBusy(true);
-    try {
-      const r = await signInWithBiometric();
-      completeLogin(r.token, r.user);
-      navigate(next, { replace: true });
-    } catch (e) {
-      const msg = e?.message || '';
-      // Cancelling the prompt is not an error worth showing
-      if (/password/i.test(msg)) setError(msg);
-      else if (!/cancel/i.test(msg)) setError('Could not sign in that way. Use your password.');
-    } finally { setBioBusy(false); }
-  };
-
-  // After a password sign-in, offer quick sign-in once
-  const afterLogin = (u) => {
-    if (bio.available && !biometricEnabled() && !biometricAsked()) { setBioOffer(u || {}); return; }
-    navigate(next, { replace: true });
-  };
-  const answerOffer = async (yes) => {
-    const u = bioOffer; markBiometricAsked();
-    if (yes) { try { await enableBiometric(u); } catch { /* skipped or cancelled */ } }
-    setBioOffer(null);
-    navigate(next, { replace: true });
-  };
+  const afterLogin = () => navigate(next, { replace: true });
 
   const submit = async (e) => {
     e.preventDefault();
@@ -284,24 +250,6 @@ export default function Login() {
               <div style={{ background: 'rgba(229,9,20,.1)', border: '1px solid rgba(229,9,20,.3)', borderRadius: 8, padding: '.75rem 1rem', color: '#ff6b6b', fontSize: '.84rem', marginBottom: '1rem' }}>{error}</div>
             )}
 
-            {canQuick && (
-              <>
-                <button type="button" onClick={quickSignIn} disabled={bioBusy} style={{
-                  width: '100%', padding: '.85rem', marginBottom: '1rem',
-                  background: 'rgba(255,255,255,.06)', color: '#fff',
-                  border: '1px solid rgba(255,255,255,.14)', borderRadius: 8,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                  fontSize: '.92rem', fontWeight: 700, cursor: 'pointer'
-                }}>
-                  {FP_ICON}
-                  {bioBusy ? 'Checking…' : `Sign in${biometricName() ? ' as ' + biometricName().split(' ')[0] : ''} with ${bio.label}`}
-                </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 1rem', color: 'rgba(255,255,255,.3)', fontSize: '.72rem' }}>
-                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.08)' }} />or use your password<div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,.08)' }} />
-                </div>
-              </>
-            )}
-
             <form onSubmit={submit}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '.78rem', color: 'rgba(255,255,255,.5)', marginBottom: 6 }}>{t('email_username')}</label>
@@ -347,18 +295,6 @@ export default function Login() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3a2 2 0 00-2 2v3m5-5v5h-5"/></svg>
                 Sign in on TV with QR Code
               </Link>
-            </div>
-          )}
-
-          {bioOffer && (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.75)', zIndex: 3000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-              <div style={{ width: '100%', maxWidth: 440, background: '#141414', borderTop: '1px solid rgba(255,255,255,.1)', borderRadius: '18px 18px 0 0', padding: '1.6rem 1.4rem calc(1.4rem + env(safe-area-inset-bottom, 0px))', textAlign: 'center' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(229,9,20,.12)', color: '#e50914', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>{FP_ICON}</div>
-                <h3 style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.35rem', fontWeight: 800, marginBottom: '.4rem' }}>Sign in faster next time?</h3>
-                <p style={{ color: 'rgba(255,255,255,.5)', fontSize: '.86rem', lineHeight: 1.55, marginBottom: '1.3rem' }}>Use your {bio.label} instead of typing your password. You can turn this off in Settings.</p>
-                <button onClick={() => answerOffer(true)} style={{ width: '100%', padding: '.85rem', background: '#e50914', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 800, fontSize: '.95rem', marginBottom: '.6rem', cursor: 'pointer' }}>Turn on</button>
-                <button onClick={() => answerOffer(false)} style={{ width: '100%', padding: '.75rem', background: 'none', color: 'rgba(255,255,255,.55)', border: 'none', fontSize: '.88rem', cursor: 'pointer' }}>Not now</button>
-              </div>
             </div>
           )}
 

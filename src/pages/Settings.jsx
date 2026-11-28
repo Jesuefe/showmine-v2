@@ -6,7 +6,6 @@ import { account } from '../api/extras';
 import { PageHeader, Field, Button, Notice, heading } from '../components/ui';
 import { Capacitor } from '@capacitor/core';
 import { introSoundOn, setIntroSound } from '../components/LaunchIntro';
-import { biometricInfo, biometricEnabled, enableBiometric, disableBiometric, markBiometricAsked } from '../utils/biometric';
 
 const card = { background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)', borderRadius: 14, padding: 18, marginBottom: 16 };
 const h2 = { ...heading, fontSize: '1.05rem', margin: '0 0 14px', letterSpacing: '.03em', textTransform: 'uppercase' };
@@ -24,22 +23,6 @@ export default function Settings() {
   const [pw, setPw] = useState({ current: '', next: '' });
   const [pwMsg, setPwMsg] = useState({});
   const [savingPw, setSavingPw] = useState(false);
-
-  const [bio, setBio] = useState({ available: false });
-  const [bioOn, setBioOn] = useState(biometricEnabled());
-  const [bioMsg, setBioMsg] = useState({});
-  const [bioBusy, setBioBusy] = useState(false);
-  useEffect(() => { biometricInfo().then(setBio); }, []);
-  const toggleBio = async () => {
-    setBioBusy(true); setBioMsg({});
-    try {
-      if (bioOn) { await disableBiometric(); setBioOn(false); setBioMsg({ kind: 'ok', text: 'Quick sign-in turned off' }); }
-      else { await enableBiometric(user); markBiometricAsked(); setBioOn(true); setBioMsg({ kind: 'ok', text: 'Quick sign-in is on' }); }
-    } catch (e) {
-      if (!/cancel/i.test(e?.message || '')) setBioMsg({ kind: 'error', text: 'Could not change this. Try again.' });
-    }
-    setBioBusy(false);
-  };
 
   const saveProfile = async (e) => {
     e.preventDefault(); setSavingProfile(true); setProfileMsg({});
@@ -104,25 +87,6 @@ export default function Settings() {
                 background: introSound ? '#e50914' : 'rgba(255,255,255,.15)', transition: 'background .2s'
               }}>
                 <span style={{ position: 'absolute', top: 3, left: introSound ? 25 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', transition: 'left .25s cubic-bezier(.3,1.5,.5,1)' }} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {bio.available && (
-          <div style={card}>
-            <h2 style={h2}>Quick sign-in</h2>
-            <Notice kind={bioMsg.kind}>{bioMsg.text}</Notice>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: '.92rem' }}>Sign in with {bio.label}</div>
-                <div style={{ color: 'rgba(255,255,255,.45)', fontSize: '.78rem', marginTop: 3, lineHeight: 1.5 }}>Skip the password on this phone. Your key stays in the phone's secure storage.</div>
-              </div>
-              <button type="button" role="switch" aria-checked={bioOn} disabled={bioBusy} onClick={toggleBio} style={{
-                width: 50, height: 28, borderRadius: 28, border: 'none', cursor: 'pointer', position: 'relative', flexShrink: 0,
-                background: bioOn ? '#e50914' : 'rgba(255,255,255,.15)', transition: 'background .2s', opacity: bioBusy ? .6 : 1
-              }}>
-                <span style={{ position: 'absolute', top: 3, left: bioOn ? 25 : 3, width: 22, height: 22, borderRadius: '50%', background: '#fff', transition: 'left .2s' }} />
               </button>
             </div>
           </div>
