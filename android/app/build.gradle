@@ -19,7 +19,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Play needs a higher code on every upload: CI run number + 1000
-        versionCode((System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInteger() + 1000)
+        versionCode((System.getenv("GITHUB_RUN_NUMBER") ?: "0").toInteger() + 2000)
         versionName "2.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
